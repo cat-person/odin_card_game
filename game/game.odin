@@ -70,6 +70,11 @@ draw :: proc() {
 	rl.DrawRectangleV(g_mem.player_pos, {10, 20}, rl.WHITE)
 	rl.DrawRectangleV({20, 20}, {10, 10}, rl.RED)
 	rl.DrawRectangleV({-30, -20}, {10, 10}, rl.GREEN)
+
+	
+
+	rl.DrawPoly({0, 0}, 6, 30, 0.0, rl.BROWN);
+
 	rl.EndMode2D()
 
 	rl.BeginMode2D(ui_camera())
