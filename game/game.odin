@@ -24,14 +24,15 @@ GameMemory :: struct {
 
 g_mem: ^GameMemory
 
-game_camera :: proc() -> rl.Camera2D {
-	w := f32(rl.GetScreenWidth())
-	h := f32(rl.GetScreenHeight())
+// model: rl.LoadModel("/resources/models/card.obj")
 
+game_camera :: proc() -> rl.Camera3D {
 	return {
-		zoom = h/PixelWindowHeight,
-		target = g_mem.player_pos,
-		offset = { w/2, h/2 },
+		position = { 0.0, 50.0, -120.0 },
+		target = { 0.0, 0.0, 0.0},
+		up = { 0.0, 1.0, 0.0 },
+		fovy = 30,
+		// projection = rl.CAMERA_PERSPECTIVE,
 	}
 }
 
@@ -64,22 +65,27 @@ update :: proc() {
 
 draw :: proc() {
 	rl.BeginDrawing()
-	rl.ClearBackground(rl.BLACK)
-	
-	rl.BeginMode2D(game_camera())
-	rl.DrawRectangleV(g_mem.player_pos, {10, 20}, rl.WHITE)
-	rl.DrawRectangleV({20, 20}, {10, 10}, rl.RED)
-	rl.DrawRectangleV({-30, -20}, {10, 10}, rl.GREEN)
+	rl.ClearBackground(rl.GREEN)
 
-	
+	rl.BeginMode3D(game_camera());
 
-	rl.DrawPoly({0, 0}, 6, 30, 0.0, rl.BROWN);
+		// rl.DrawModel(model, (Vector3){ 0.0, -8.0, 0.0 }, 1.0, rl.WHITE);   // Draw 3d model with texture
+		rl.DrawGrid(10, 10.0);
 
-	rl.EndMode2D()
+	rl.EndMode3D();
 
-	rl.BeginMode2D(ui_camera())
-	rl.DrawText(fmt.ctprintf("some_number: %v\nplayer_pos: %v", g_mem.some_number, g_mem.player_pos), 5, 5, 8, rl.WHITE)
-	rl.EndMode2D()
+	// rl.BeginMode2D(game_camera())
+	// rl.DrawRectangleV(g_mem.player_pos, {10, 20}, rl.WHITE)
+	// rl.DrawRectangleV({20, 20}, {10, 10}, rl.RED)
+	// rl.DrawRectangleV({-30, -20}, {10, 10}, rl.GREEN)
+
+	// rl.DrawPoly({0, 0}, 6, 30, 0.0, rl.BROWN);
+
+	// rl.EndMode2D()
+
+	// rl.BeginMode2D(ui_camera())
+	// rl.DrawText(fmt.ctprintf("some_number: %v\nplayer_pos: %v", g_mem.some_number, g_mem.player_pos), 5, 5, 8, rl.WHITE)
+	// rl.EndMode2D()
 
 	rl.EndDrawing()
 }
