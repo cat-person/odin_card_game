@@ -24,7 +24,8 @@ GameMemory :: struct {
 
 g_mem: ^GameMemory
 
-// model: rl.LoadModel("/resources/models/card.obj")
+model := rl.LoadModel("/resources/models/card.obj")
+cube := rl.LoadModel("/resources/models/cube.obj")
 
 game_camera :: proc() -> rl.Camera3D {
 	return {
@@ -65,11 +66,12 @@ update :: proc() {
 
 draw :: proc() {
 	rl.BeginDrawing()
-	rl.ClearBackground(rl.GREEN)
+	rl.ClearBackground(rl.GRAY)
 
 	rl.BeginMode3D(game_camera());
 
-		// rl.DrawModel(model, (Vector3){ 0.0, -8.0, 0.0 }, 1.0, rl.WHITE);   // Draw 3d model with texture
+		rl.DrawModel(model, { 0.0, -8.0, 0.0 }, 1.0, rl.WHITE);   // Draw 3d model with texture
+		rl.DrawModel(cube, { 0.0, -8.0, 0.0 }, 1.0, rl.RED);   // Draw 3d model with texture
 		rl.DrawGrid(10, 10.0);
 
 	rl.EndMode3D();
