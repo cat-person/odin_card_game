@@ -25,11 +25,12 @@ GameMemory :: struct {
 g_mem: ^GameMemory
 
 model: rl.Model
+camera_movement: rl.Vector3
 
 game_camera :: proc() -> rl.Camera3D {
 	return {
-		position = { 0.0, 0.2, -0.2 },
-		target = { 0.0, 0.0, 0.0},
+		position = camera_movement + { 0.0, 0.2, -0.2 } ,
+		target = camera_movement,
 		up = { 0.0, 1.0, 0.0 },
 		fovy = 30,
 		// projection = rl.CAMERA_PERSPECTIVE,
@@ -43,24 +44,31 @@ ui_camera :: proc() -> rl.Camera2D {
 }
 
 update :: proc() {
-	input: Vec2
+	input: rl.Vector3
+
+	// if (rl.IsMouseButtonDown(rl.MOUSE_BUTTON_RIGHT))
+	// {
+		// input += GetMouseDelta();
+	// }
 
 	if rl.IsKeyDown(.UP) || rl.IsKeyDown(.W) {
-		input.y -= 1
+		input.z += 1
 	}
 	if rl.IsKeyDown(.DOWN) || rl.IsKeyDown(.S) {
-		input.y += 1
+		input.z -= 1
 	}
 	if rl.IsKeyDown(.LEFT) || rl.IsKeyDown(.A) {
-		input.x -= 1
-	}
-	if rl.IsKeyDown(.RIGHT) || rl.IsKeyDown(.D) {
 		input.x += 1
 	}
+	if rl.IsKeyDown(.RIGHT) || rl.IsKeyDown(.D) {
+		input.x -= 1
+	}
 
-	input = linalg.normalize0(input)
-	g_mem.player_pos += input * rl.GetFrameTime() * 100
-	g_mem.some_number += 1
+	// input = linalg.normalize0(input)
+	// g_mem.player_pos += input * rl.GetFrameTime() * 100
+	// g_mem.some_number += 1
+
+	camera_movement += input / 1000
 }
 
 draw :: proc() {
@@ -98,7 +106,7 @@ game_init :: proc() {
 	}
 
 	model = rl.LoadModel("game/assets/models/card.obj")
-
+	camera_movement = { 0.0, 0.0, 0.0 }
 	game_hot_reloaded(g_mem)
 }
 
