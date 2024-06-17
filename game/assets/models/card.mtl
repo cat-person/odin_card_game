@@ -1,10 +1,10 @@
-# Blender 3.6.5 MTL File: 'None'
+# Blender 3.6.5 MTL File: 'card.blend'
 # www.blender.org
 
-newmtl Material
+newmtl Material.001
 Ns 250.000000
 Ka 1.000000 1.000000 1.000000
-Kd 0.800000 0.800000 0.800000
+Kd 0.272055 0.284643 0.195706
 Ks 0.500000 0.500000 0.500000
 Ke 0.000000 0.000000 0.000000
 Ni 1.450000

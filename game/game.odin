@@ -24,12 +24,11 @@ GameMemory :: struct {
 
 g_mem: ^GameMemory
 
-model := rl.LoadModel("/resources/models/card.obj")
-cube := rl.LoadModel("/resources/models/cube.obj")
+model: rl.Model
 
 game_camera :: proc() -> rl.Camera3D {
 	return {
-		position = { 0.0, 50.0, -120.0 },
+		position = { 0.0, 0.2, -0.2 },
 		target = { 0.0, 0.0, 0.0},
 		up = { 0.0, 1.0, 0.0 },
 		fovy = 30,
@@ -66,29 +65,12 @@ update :: proc() {
 
 draw :: proc() {
 	rl.BeginDrawing()
-	rl.ClearBackground(rl.GRAY)
+	rl.ClearBackground(rl.BLACK)
 
 	rl.BeginMode3D(game_camera());
-
-		rl.DrawModel(model, { 0.0, -8.0, 0.0 }, 1.0, rl.WHITE);   // Draw 3d model with texture
-		rl.DrawModel(cube, { 0.0, -8.0, 0.0 }, 1.0, rl.RED);   // Draw 3d model with texture
-		rl.DrawGrid(10, 10.0);
-
+		rl.DrawModel(model, { 0.0, 0.0, 0.0 }, 1.0, rl.RED);   // Draw 3d model with texture
+		rl.DrawGrid(10, 0.1);
 	rl.EndMode3D();
-
-	// rl.BeginMode2D(game_camera())
-	// rl.DrawRectangleV(g_mem.player_pos, {10, 20}, rl.WHITE)
-	// rl.DrawRectangleV({20, 20}, {10, 10}, rl.RED)
-	// rl.DrawRectangleV({-30, -20}, {10, 10}, rl.GREEN)
-
-	// rl.DrawPoly({0, 0}, 6, 30, 0.0, rl.BROWN);
-
-	// rl.EndMode2D()
-
-	// rl.BeginMode2D(ui_camera())
-	// rl.DrawText(fmt.ctprintf("some_number: %v\nplayer_pos: %v", g_mem.some_number, g_mem.player_pos), 5, 5, 8, rl.WHITE)
-	// rl.EndMode2D()
-
 	rl.EndDrawing()
 }
 
@@ -114,6 +96,8 @@ game_init :: proc() {
 	g_mem^ = GameMemory {
 		some_number = 100,
 	}
+
+	model = rl.LoadModel("game/assets/models/card.obj")
 
 	game_hot_reloaded(g_mem)
 }
