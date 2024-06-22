@@ -25,10 +25,11 @@ GameMemory :: struct {
 g_mem: ^GameMemory
 
 model: rl.Model
+card_position: rl.Vector3
+mouse_point: rl.Vector3
+
 camera_movement: rl.Vector3
 color: rl.Color
-
-card_position: rl.Vector3
 
 game_camera :: proc() -> rl.Camera3D {
 	return {
@@ -54,7 +55,12 @@ update :: proc() {
 	if coll := rl.GetRayCollisionMesh(mouse_ray, model.meshes[0], model.transform); coll.hit {
 		color = rl.GREEN
 		if (rl.IsMouseButtonDown(.LEFT)){
-
+			if(mouse_point != {0, 0, 0}) {
+				card_position += coll.point - mouse_point
+			}
+			mouse_point = coll.point
+		} else {
+			mouse_point = {0,0,0}
 		}		
 	} else {
 		color = rl.RED
@@ -81,7 +87,8 @@ draw :: proc() {
 	rl.ClearBackground(rl.BLACK)
 
 	rl.BeginMode3D(game_camera());
-		rl.DrawModel(model, { 0.0, 0.0, 0.0 }, 1.0, color);   // Draw 3d model with texture
+		model.transform = rl.MatrixTranslate(card_position.x, card_position.y, card_position.z)
+		rl.DrawModel(model, {0,0,0}, 1.0, color);   // Draw 3d model with texture
 		rl.DrawGrid(10, 0.1);
 	rl.EndMode3D();
 	rl.EndDrawing()
@@ -112,6 +119,7 @@ game_init :: proc() {
 
 	model = rl.LoadModel("game/assets/models/card.obj")
 	camera_movement = { 0.0, 0.0, 0.0 }
+	card_position = { 0.0, 0.0, 0.0 }
 	color = rl.RED
 	game_hot_reloaded(g_mem)
 }
