@@ -26,14 +26,16 @@ g_mem: ^GameMemory
 
 model: rl.Model
 camera_movement: rl.Vector3
+color: rl.Color
+
+card_position: rl.Vector3
 
 game_camera :: proc() -> rl.Camera3D {
 	return {
-		position = camera_movement + { 0.0, 0.2, -0.2 } ,
+		position = camera_movement + { 0.0, 0.4, -0.4 } ,
 		target = camera_movement,
 		up = { 0.0, 1.0, 0.0 },
-		fovy = 30,
-		// projection = rl.CAMERA_PERSPECTIVE,
+		fovy = 30
 	}
 }
 
@@ -43,13 +45,20 @@ ui_camera :: proc() -> rl.Camera2D {
 	}
 }
 
+
+
 update :: proc() {
 	input: rl.Vector3
+	mouse_ray := rl.GetMouseRay(rl.GetMousePosition(), game_camera())
 
-	// if (rl.IsMouseButtonDown(rl.MOUSE_BUTTON_RIGHT))
-	// {
-		// input += GetMouseDelta();
-	// }
+	if coll := rl.GetRayCollisionMesh(mouse_ray, model.meshes[0], model.transform); coll.hit {
+		color = rl.GREEN
+		if (rl.IsMouseButtonDown(.LEFT)){
+
+		}		
+	} else {
+		color = rl.RED
+	}
 
 	if rl.IsKeyDown(.UP) || rl.IsKeyDown(.W) {
 		input.z += 1
@@ -64,10 +73,6 @@ update :: proc() {
 		input.x -= 1
 	}
 
-	// input = linalg.normalize0(input)
-	// g_mem.player_pos += input * rl.GetFrameTime() * 100
-	// g_mem.some_number += 1
-
 	camera_movement += input / 1000
 }
 
@@ -76,7 +81,7 @@ draw :: proc() {
 	rl.ClearBackground(rl.BLACK)
 
 	rl.BeginMode3D(game_camera());
-		rl.DrawModel(model, { 0.0, 0.0, 0.0 }, 1.0, rl.RED);   // Draw 3d model with texture
+		rl.DrawModel(model, { 0.0, 0.0, 0.0 }, 1.0, color);   // Draw 3d model with texture
 		rl.DrawGrid(10, 0.1);
 	rl.EndMode3D();
 	rl.EndDrawing()
@@ -107,6 +112,7 @@ game_init :: proc() {
 
 	model = rl.LoadModel("game/assets/models/card.obj")
 	camera_movement = { 0.0, 0.0, 0.0 }
+	color = rl.RED
 	game_hot_reloaded(g_mem)
 }
 
