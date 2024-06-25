@@ -14,6 +14,7 @@ package game
 import "core:math/linalg"
 import "core:fmt"
 import rl "vendor:raylib"
+import "entity"
 
 PixelWindowHeight :: 180
 
@@ -22,14 +23,13 @@ GameMemory :: struct {
 	some_number: int,
 }
 
+card: entity.Card
+
 g_mem: ^GameMemory
 
-model: rl.Model
-card_position: rl.Vector3
 mouse_point: rl.Vector3
 
 camera_movement: rl.Vector3
-color: rl.Color
 
 game_camera :: proc() -> rl.Camera3D {
 	return {
@@ -46,24 +46,26 @@ ui_camera :: proc() -> rl.Camera2D {
 	}
 }
 
-
-
 update :: proc() {
 	input: rl.Vector3
 	mouse_ray := rl.GetMouseRay(rl.GetMousePosition(), game_camera())
 
-	if coll := rl.GetRayCollisionMesh(mouse_ray, model.meshes[0], model.transform); coll.hit {
-		color = rl.GREEN
+	if coll := rl.GetRayCollisionMesh(mouse_ray, card.model.meshes[0], rl.MatrixTranslate(
+			card.position.x,
+			card.position.y,
+			card.position.z
+		)); coll.hit {
+		card.color = rl.GREEN
 		if (rl.IsMouseButtonDown(.LEFT)){
 			if(mouse_point != {0, 0, 0}) {
-				card_position += coll.point - mouse_point
+				card.position += coll.point - mouse_point
 			}
 			mouse_point = coll.point
 		} else {
 			mouse_point = {0,0,0}
 		}		
 	} else {
-		color = rl.RED
+		card.color = rl.RED
 	}
 
 	if rl.IsKeyDown(.UP) || rl.IsKeyDown(.W) {
@@ -82,15 +84,16 @@ update :: proc() {
 	camera_movement += input / 1000
 }
 
+
+
 draw :: proc() {
 	rl.BeginDrawing()
 	rl.ClearBackground(rl.BLACK)
-
-	rl.BeginMode3D(game_camera());
-		model.transform = rl.MatrixTranslate(card_position.x, card_position.y, card_position.z)
-		rl.DrawModel(model, {0,0,0}, 1.0, color);   // Draw 3d model with texture
-		rl.DrawGrid(10, 0.1);
-	rl.EndMode3D();
+		rl.BeginMode3D(game_camera());
+			rl.DrawModel(card.model, card.position, 1.0, card.color);	
+			
+			rl.DrawGrid(10, 0.1);
+		rl.EndMode3D();
 	rl.EndDrawing()
 }
 
@@ -117,10 +120,15 @@ game_init :: proc() {
 		some_number = 100,
 	}
 
-	model = rl.LoadModel("game/assets/models/card.obj")
+	card_model := rl.LoadModel("game/assets/models/card.obj")
 	camera_movement = { 0.0, 0.0, 0.0 }
-	card_position = { 0.0, 0.0, 0.0 }
-	color = rl.RED
+
+	card = {
+		text = "AAAA",
+		color = rl.RED,
+		model = card_model,
+	}
+
 	game_hot_reloaded(g_mem)
 }
 
