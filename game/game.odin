@@ -14,58 +14,46 @@ package game
 import "core:math/linalg"
 import "core:fmt"
 import rl "vendor:raylib"
+
 import "entity"
+import "utils"
 
 PixelWindowHeight :: 180
 
-GameMemory :: struct {	
-	player_pos: Vec2,
-	some_number: int,
-}
-
-card: entity.Card
-
-g_mem: ^GameMemory
+g_mem: ^entity.World
 
 mouse_point: rl.Vector3
 
-camera_movement: rl.Vector3
-
-game_camera :: proc() -> rl.Camera3D {
-	return {
-		position = camera_movement + { 0.0, 0.4, -0.4 } ,
-		target = camera_movement,
-		up = { 0.0, 1.0, 0.0 },
-		fovy = 30
-	}
-}
-
-ui_camera :: proc() -> rl.Camera2D {
-	return {
-		zoom = f32(rl.GetScreenHeight())/PixelWindowHeight,
-	}
+game_camera := rl.Camera3D {
+	position = { 0.0, 0.4, -0.4 } ,
+	target = { 0.0, 0.0, 0.0 },
+	up = { 0.0, 1.0, 0.0 },
+	fovy = 30
 }
 
 update :: proc() {
 	input: rl.Vector3
-	mouse_ray := rl.GetMouseRay(rl.GetMousePosition(), game_camera())
+	mouse_ray := rl.GetMouseRay(rl.GetMousePosition(), game_camera)
 
-	if coll := rl.GetRayCollisionMesh(mouse_ray, card.model.meshes[0], rl.MatrixTranslate(
+	for &card in g_mem.cards {
+		if coll := rl.GetRayCollisionMesh(mouse_ray, card.model.meshes[0], rl.MatrixTranslate(
 			card.position.x,
 			card.position.y,
-			card.position.z
-		)); coll.hit {
-		card.color = rl.GREEN
-		if (rl.IsMouseButtonDown(.LEFT)){
-			if(mouse_point != {0, 0, 0}) {
-				card.position += coll.point - mouse_point
+			card.position.z)); coll.hit {
+				
+				if (rl.IsMouseButtonDown(.LEFT)){
+					if(mouse_point != {0, 0, 0}) {
+						card.color = rl.LIME
+						card.position += coll.point - mouse_point
+					}
+					mouse_point = coll.point
+				} else {
+					mouse_point = {0,0,0}
+					card.color = rl.GREEN
+				}
+			} else {
+				card.color = rl.YELLOW
 			}
-			mouse_point = coll.point
-		} else {
-			mouse_point = {0,0,0}
-		}		
-	} else {
-		card.color = rl.RED
 	}
 
 	if rl.IsKeyDown(.UP) || rl.IsKeyDown(.W) {
@@ -81,7 +69,8 @@ update :: proc() {
 		input.x -= 1
 	}
 
-	camera_movement += input / 1000
+	game_camera.position += input / 1000
+	game_camera.target += input / 1000
 }
 
 
@@ -89,9 +78,10 @@ update :: proc() {
 draw :: proc() {
 	rl.BeginDrawing()
 	rl.ClearBackground(rl.BLACK)
-		rl.BeginMode3D(game_camera());
-			rl.DrawModel(card.model, card.position, 1.0, card.color);	
-			
+		rl.BeginMode3D(game_camera);
+			for card in g_mem.cards {
+				rl.DrawModel(card.model, card.position, 1.0, card.color);	
+			}
 			rl.DrawGrid(10, 0.1);
 		rl.EndMode3D();
 	rl.EndDrawing()
@@ -114,21 +104,13 @@ game_init_window :: proc() {
 
 @(export)
 game_init :: proc() {
-	g_mem = new(GameMemory)
+	g_mem = new(entity.World)
 
-	g_mem^ = GameMemory {
-		some_number = 100,
+	g_mem^ = entity.World {
+		cards = {
+			entity.createCard(rl.LoadModel("game/assets/models/card.obj"))
+		} 
 	}
-
-	card_model := rl.LoadModel("game/assets/models/card.obj")
-	camera_movement = { 0.0, 0.0, 0.0 }
-
-	card = {
-		text = "AAAA",
-		color = rl.RED,
-		model = card_model,
-	}
-
 	game_hot_reloaded(g_mem)
 }
 
@@ -149,12 +131,12 @@ game_memory :: proc() -> rawptr {
 
 @(export)
 game_memory_size :: proc() -> int {
-	return size_of(GameMemory)
+	return size_of(entity.World)
 }
 
 @(export)
 game_hot_reloaded :: proc(mem: rawptr) {
-	g_mem = (^GameMemory)(mem)
+	g_mem = (^entity.World)(mem)
 }
 
 @(export)
