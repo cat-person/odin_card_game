@@ -35,26 +35,31 @@ update :: proc() {
 	input: rl.Vector3
 	mouse_ray := rl.GetMouseRay(rl.GetMousePosition(), game_camera)
 
-	for &card in g_mem.cards {
-		if coll := rl.GetRayCollisionMesh(mouse_ray, card.model.meshes[0], rl.MatrixTranslate(
-			card.position.x,
-			card.position.y,
-			card.position.z)); coll.hit {
-				
-				if (rl.IsMouseButtonDown(.LEFT)){
-					if(mouse_point != {0, 0, 0}) {
-						card.color = rl.LIME
-						card.position += coll.point - mouse_point
-					}
-					mouse_point = coll.point
-				} else {
-					mouse_point = {0,0,0}
-					card.color = rl.GREEN
-				}
-			} else {
-				card.color = rl.YELLOW
-			}
-	}
+	// card := g_mem.deck.cards[0]
+
+	// if coll := rl.GetRayCollisionMesh(mouse_ray, card.model.meshes[0], rl.MatrixTranslate(
+	// 	card.position.x,
+	// 	card.position.y,
+	// 	card.position.z)); coll.hit {
+			
+	// 	if (rl.IsMouseButtonDown(.LEFT)){
+	// 		if(mouse_point != {0, 0, 0}) {
+	// 			// remeinedCards, drawnCard := entity.drawCard(g_mem.deck)
+	// 			// log(remeinedCards)
+	// 			// log(drawnCard)
+
+	// 			// g_mem.deck.cards = remeinedCards
+	// 			card.color = rl.LIME
+	// 			card.position += coll.point - mouse_point
+	// 		}
+	// 		mouse_point = coll.point
+	// 	} else {
+	// 		mouse_point = {0,0,0}
+	// 		card.color = rl.GREEN
+	// 	}
+	// } else {
+	// 	card.color = rl.YELLOW
+	// }
 
 	if rl.IsKeyDown(.UP) || rl.IsKeyDown(.W) {
 		input.z += 1
@@ -73,15 +78,15 @@ update :: proc() {
 	game_camera.target += input / 1000
 }
 
-
-
 draw :: proc() {
 	rl.BeginDrawing()
 	rl.ClearBackground(rl.BLACK)
 		rl.BeginMode3D(game_camera);
-			for card in g_mem.cards {
-				rl.DrawModel(card.model, card.position, 1.0, card.color);	
+			for &card, idx in g_mem.deck.cards {
+				card.position = g_mem.deck.position + {0, (f32)(5 - idx) * 0.002, 0} // <= should be card.height or something
+				rl.DrawModel(card.model, card.position, 1.0, card.color);
 			}
+
 			rl.DrawGrid(10, 0.1);
 		rl.EndMode3D();
 	rl.EndDrawing()
@@ -99,7 +104,7 @@ game_init_window :: proc() {
 	rl.SetConfigFlags({.WINDOW_RESIZABLE})
 	rl.InitWindow(1280, 720, "Odin + Raylib + Hot Reload template!")
 	rl.SetWindowPosition(200, 200)
-	rl.SetTargetFPS(500)
+	rl.SetTargetFPS(60)
 }
 
 @(export)
@@ -108,8 +113,9 @@ game_init :: proc() {
 
 	g_mem^ = entity.World {
 		cards = {
-			entity.createCard(rl.LoadModel("game/assets/models/card.obj"))
-		} 
+			// entity.createCard(rl.LoadModel("game/assets/models/card.obj"))
+		},
+		deck = entity.createDeck(rl.LoadModel("game/assets/models/card.obj")) 
 	}
 	game_hot_reloaded(g_mem)
 }

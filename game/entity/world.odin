@@ -4,7 +4,6 @@ import rl "vendor:raylib"
 prevState: World
 
 World :: struct {	
-	cards: [dynamic]Card
+	cards: [dynamic]Card,
+	deck: Deck
 }
-
-
