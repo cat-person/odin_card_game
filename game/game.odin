@@ -31,34 +31,39 @@ game_camera := rl.Camera3D {
 	fovy = 30
 }
 
+cardModel: rl.Model
+
 update :: proc() {
 	input: rl.Vector3
 	mouse_ray := rl.GetMouseRay(rl.GetMousePosition(), game_camera)
 
-	card := &g_mem.deck.cards[0]
+	if(false) {
 
-	if coll := rl.GetRayCollisionMesh(mouse_ray, card.model.meshes[0], rl.MatrixTranslate(
-		card.position.x,
-		card.position.y,
-		card.position.z)); coll.hit {
-			
-		if (rl.IsMouseButtonDown(.LEFT)){
-			if(mouse_point != {0, 0, 0}) {
-				// remeinedCards, drawnCard := entity.drawCard(g_mem.deck)
-				// log(remeinedCards)
-				// log(drawnCard)
-
-				// g_mem.deck.cards = remeinedCards
-				card.color = rl.LIME
-				card.position += coll.point - mouse_point
-			}
-			mouse_point = coll.point
-		} else {
-			mouse_point = {0,0,0}
-			card.color = rl.GREEN
-		}
 	} else {
-		card.color = rl.YELLOW
+		card := &g_mem.deck.cards[0]
+
+		if coll := rl.GetRayCollisionMesh(mouse_ray, card.model.meshes[0], rl.MatrixTranslate(
+			card.position.x,
+			card.position.y,
+			card.position.z)); coll.hit {
+				
+			if (rl.IsMouseButtonDown(.LEFT)){
+				if(mouse_point != {0, 0, 0}) {
+					deck, drawnCard := entity.drawCard(g_mem.deck)
+
+					g_mem.deck = deck
+					drawnCard.color = rl.GREEN
+					drawnCard.position += coll.point - mouse_point
+					append(&g_mem.cards, drawnCard)
+				}
+				mouse_point = coll.point
+			} else {
+				mouse_point = {0,0,0}
+				card.color = rl.LIME
+			}
+		} else {
+			card.color = rl.YELLOW
+		}
 	}
 
 	if rl.IsKeyDown(.UP) || rl.IsKeyDown(.W) {
@@ -82,6 +87,9 @@ draw :: proc() {
 	rl.BeginDrawing()
 	rl.ClearBackground(rl.BLACK)
 		rl.BeginMode3D(game_camera);
+			for card in g_mem.cards {
+				rl.DrawModel(card.model, card.position, 1.0, card.color);
+			}
 			for &card, idx in g_mem.deck.cards {
 				card.position = g_mem.deck.position + {0, (f32)(5 - idx) * 0.002, 0} // <= should be card.height or something
 				rl.DrawModel(card.model, card.position, 1.0, card.color);
@@ -109,13 +117,13 @@ game_init_window :: proc() {
 
 @(export)
 game_init :: proc() {
+	cardModel = rl.LoadModel("game/assets/models/card.obj")
+
 	g_mem = new(entity.World)
 
 	g_mem^ = entity.World {
-		cards = {
-			// entity.createCard(rl.LoadModel("game/assets/models/card.obj"))
-		},
-		deck = entity.createDeck(rl.LoadModel("game/assets/models/card.obj")) 
+		cards = {},
+		deck = entity.createDeck(cardModel) 
 	}
 	game_hot_reloaded(g_mem)
 }
