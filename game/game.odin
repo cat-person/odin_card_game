@@ -35,31 +35,31 @@ update :: proc() {
 	input: rl.Vector3
 	mouse_ray := rl.GetMouseRay(rl.GetMousePosition(), game_camera)
 
-	// card := g_mem.deck.cards[0]
+	card := &g_mem.deck.cards[0]
 
-	// if coll := rl.GetRayCollisionMesh(mouse_ray, card.model.meshes[0], rl.MatrixTranslate(
-	// 	card.position.x,
-	// 	card.position.y,
-	// 	card.position.z)); coll.hit {
+	if coll := rl.GetRayCollisionMesh(mouse_ray, card.model.meshes[0], rl.MatrixTranslate(
+		card.position.x,
+		card.position.y,
+		card.position.z)); coll.hit {
 			
-	// 	if (rl.IsMouseButtonDown(.LEFT)){
-	// 		if(mouse_point != {0, 0, 0}) {
-	// 			// remeinedCards, drawnCard := entity.drawCard(g_mem.deck)
-	// 			// log(remeinedCards)
-	// 			// log(drawnCard)
+		if (rl.IsMouseButtonDown(.LEFT)){
+			if(mouse_point != {0, 0, 0}) {
+				// remeinedCards, drawnCard := entity.drawCard(g_mem.deck)
+				// log(remeinedCards)
+				// log(drawnCard)
 
-	// 			// g_mem.deck.cards = remeinedCards
-	// 			card.color = rl.LIME
-	// 			card.position += coll.point - mouse_point
-	// 		}
-	// 		mouse_point = coll.point
-	// 	} else {
-	// 		mouse_point = {0,0,0}
-	// 		card.color = rl.GREEN
-	// 	}
-	// } else {
-	// 	card.color = rl.YELLOW
-	// }
+				// g_mem.deck.cards = remeinedCards
+				card.color = rl.LIME
+				card.position += coll.point - mouse_point
+			}
+			mouse_point = coll.point
+		} else {
+			mouse_point = {0,0,0}
+			card.color = rl.GREEN
+		}
+	} else {
+		card.color = rl.YELLOW
+	}
 
 	if rl.IsKeyDown(.UP) || rl.IsKeyDown(.W) {
 		input.z += 1
