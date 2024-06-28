@@ -22,7 +22,10 @@ PixelWindowHeight :: 180
 
 g_mem: ^entity.World
 
-mouse_point: rl.Vector3
+cardCollPoint: rl.Vector3
+
+draggedCard : ^entity.Card
+
 
 game_camera := rl.Camera3D {
 	position = { 0.0, 0.4, -0.4 } ,
@@ -37,34 +40,61 @@ update :: proc() {
 	input: rl.Vector3
 	mouse_ray := rl.GetMouseRay(rl.GetMousePosition(), game_camera)
 
-	if(false) {
-
-	} else {
-		card := &g_mem.deck.cards[0]
-
-		if coll := rl.GetRayCollisionMesh(mouse_ray, card.model.meshes[0], rl.MatrixTranslate(
-			card.position.x,
-			card.position.y,
-			card.position.z)); coll.hit {
-				
-			if (rl.IsMouseButtonDown(.LEFT)){
-				if(mouse_point != {0, 0, 0}) {
-					deck, drawnCard := entity.drawCard(g_mem.deck)
-
-					g_mem.deck = deck
-					drawnCard.color = rl.GREEN
-					drawnCard.position += coll.point - mouse_point
-					append(&g_mem.cards, drawnCard)
+	// Extract
+	if(draggedCard == nil){
+		for &card in g_mem.cards {
+			cardTransform := rl.MatrixTranslate(card.position.x, card.position.y,card.position.z)
+			coll := rl.GetRayCollisionMesh(mouse_ray, card.model.meshes[0], cardTransform)
+				if(coll != {}) {
+					card.color = rl.LIME
+					
+					if(rl.IsMouseButtonDown(.LEFT)) {
+						card.color = rl.GREEN
+						draggedCard = &card
+						cardCollPoint = coll.point
+					}
+					break
 				}
-				mouse_point = coll.point
-			} else {
-				mouse_point = {0,0,0}
-				card.color = rl.LIME
-			}
+		}
+	} 
+
+
+	if(draggedCard != nil) {
+
+		if(rl.IsMouseButtonDown(.LEFT)) {
+
+			mouse_ray := rl.GetMouseRay(rl.GetMousePosition(), game_camera)
+			cardTransform := rl.MatrixTranslate(draggedCard.position.x, draggedCard.position.y,draggedCard.position.z)
+			coll := rl.GetRayCollisionMesh(mouse_ray, draggedCard.model.meshes[0], cardTransform)
+
+			draggedCard.position += coll.point - cardCollPoint
+			
+			cardCollPoint = coll.point
 		} else {
-			card.color = rl.YELLOW
+			draggedCard = nil
 		}
 	}
+
+	// if(draggedCard != nil) {
+	// 	if (rl.IsMouseButtonDown(.LEFT)){
+	// 		if(mouse_point != {0, 0, 0}) {
+	// 			deck, drawnCard := entity.drawCard(g_mem.deck)
+
+	// 			g_mem.deck = deck
+				
+	// 			drawnCard.color = rl.GREEN
+	// 			drawnCard.position += coll.point - mouse_point
+	// 			draggedCard = &drawnCard
+
+	// 			append(&g_mem.cards, drawnCard)
+	// 		}
+	// 		// mouse_point = coll.point
+	// 	} else {
+	// 		// drawnCard.color = rl.LIME
+	// 		mouse_point = {0,0,0}
+	// 		draggedCard = nil
+	// 	}
+	// }
 
 	if rl.IsKeyDown(.UP) || rl.IsKeyDown(.W) {
 		input.z += 1
@@ -100,6 +130,10 @@ draw :: proc() {
 	rl.EndDrawing()
 }
 
+// findCollision :: proc(world: World, mouse_ray: Ray) -> ^rl.RayCollision {
+// 	return nil
+// }
+
 @(export)
 game_update :: proc() -> bool {
 	update()
@@ -122,7 +156,14 @@ game_init :: proc() {
 	g_mem = new(entity.World)
 
 	g_mem^ = entity.World {
-		cards = {},
+		cards = {
+			{
+				text="AAA",
+				color=rl.PINK,
+				position={0.05, 0, 0},
+				model=cardModel
+			}
+		},
 		deck = entity.createDeck(cardModel) 
 	}
 	game_hot_reloaded(g_mem)
