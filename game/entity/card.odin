@@ -9,7 +9,7 @@ Card :: struct {
 }
 
 createCard :: proc(givenModel: rl.Model) -> Card {
-    return Card {
+    return {
         text="AAA",
         color=rl.YELLOW,
         position={0, 0, 0},

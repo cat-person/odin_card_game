@@ -1,14 +1,3 @@
-// This file is compiled as part of the `odin.dll` file. It contains the
-// procs that `game.exe` will call, such as:
-//
-// game_init: Sets up the game state
-// game_update: Run once per frame
-// game_shutdown: Shuts down game and frees memory
-// game_memory: Run just before a hot reload, so game.exe has a pointer to the
-//		game's memory.
-// game_hot_reloaded: Run after a hot reload so that the `g_mem` global variable
-//		can be set to whatever pointer it was in the old DLL.
-
 package game
 
 import "core:math/linalg"
@@ -22,9 +11,9 @@ PixelWindowHeight :: 180
 
 g_mem: ^entity.World
 
-cardCollPoint: rl.Vector3
+card_coll_point: rl.Vector3
 
-draggedCard : ^entity.Card
+dragged_card : ^entity.Card
 
 
 game_camera := rl.Camera3D {
@@ -34,24 +23,24 @@ game_camera := rl.Camera3D {
 	fovy = 30
 }
 
-cardModel: rl.Model
+card_model: rl.Model
 
 update :: proc() {
 	input: rl.Vector3
 	mouse_ray := rl.GetMouseRay(rl.GetMousePosition(), game_camera)
 
 	// Extract
-	if(draggedCard == nil){
+	if(dragged_card == nil){
 		for &card in g_mem.cards {
-			cardTransform := rl.MatrixTranslate(card.position.x, card.position.y,card.position.z)
-			coll := rl.GetRayCollisionMesh(mouse_ray, card.model.meshes[0], cardTransform)
+			card_transform := rl.MatrixTranslate(card.position.x, card.position.y, card.position.z)
+			coll := rl.GetRayCollisionMesh(mouse_ray, card.model.meshes[0], card_transform)
 				if(coll != {}) {
 					card.color = rl.LIME
 					
 					if(rl.IsMouseButtonDown(.LEFT)) {
 						card.color = rl.GREEN
-						draggedCard = &card
-						cardCollPoint = coll.point
+						dragged_card = &card
+						card_coll_point = coll.point
 					}
 					break
 				}
@@ -59,42 +48,21 @@ update :: proc() {
 	} 
 
 
-	if(draggedCard != nil) {
+	if(dragged_card != nil) {
 
 		if(rl.IsMouseButtonDown(.LEFT)) {
 
 			mouse_ray := rl.GetMouseRay(rl.GetMousePosition(), game_camera)
-			cardTransform := rl.MatrixTranslate(draggedCard.position.x, draggedCard.position.y,draggedCard.position.z)
-			coll := rl.GetRayCollisionMesh(mouse_ray, draggedCard.model.meshes[0], cardTransform)
+			card_transform := rl.MatrixTranslate(dragged_card.position.x, dragged_card.position.y, dragged_card.position.z)
+			coll := rl.GetRayCollisionMesh(mouse_ray, dragged_card.model.meshes[0], card_transform)
 
-			draggedCard.position += coll.point - cardCollPoint
+			dragged_card.position += coll.point - card_coll_point
 			
-			cardCollPoint = coll.point
+			card_coll_point = coll.point
 		} else {
-			draggedCard = nil
+			dragged_card = nil
 		}
 	}
-
-	// if(draggedCard != nil) {
-	// 	if (rl.IsMouseButtonDown(.LEFT)){
-	// 		if(mouse_point != {0, 0, 0}) {
-	// 			deck, drawnCard := entity.drawCard(g_mem.deck)
-
-	// 			g_mem.deck = deck
-				
-	// 			drawnCard.color = rl.GREEN
-	// 			drawnCard.position += coll.point - mouse_point
-	// 			draggedCard = &drawnCard
-
-	// 			append(&g_mem.cards, drawnCard)
-	// 		}
-	// 		// mouse_point = coll.point
-	// 	} else {
-	// 		// drawnCard.color = rl.LIME
-	// 		mouse_point = {0,0,0}
-	// 		draggedCard = nil
-	// 	}
-	// }
 
 	if rl.IsKeyDown(.UP) || rl.IsKeyDown(.W) {
 		input.z += 1
@@ -130,10 +98,6 @@ draw :: proc() {
 	rl.EndDrawing()
 }
 
-// findCollision :: proc(world: World, mouse_ray: Ray) -> ^rl.RayCollision {
-// 	return nil
-// }
-
 @(export)
 game_update :: proc() -> bool {
 	update()
@@ -151,7 +115,7 @@ game_init_window :: proc() {
 
 @(export)
 game_init :: proc() {
-	cardModel = rl.LoadModel("game/assets/models/card.obj")
+	card_model = rl.LoadModel("game/assets/models/card.obj")
 
 	g_mem = new(entity.World)
 
@@ -161,10 +125,10 @@ game_init :: proc() {
 				text="AAA",
 				color=rl.PINK,
 				position={0.05, 0, 0},
-				model=cardModel
+				model=card_model
 			}
 		},
-		deck = entity.createDeck(cardModel) 
+		deck = entity.createDeck(card_model) 
 	}
 	game_hot_reloaded(g_mem)
 }
