@@ -6,6 +6,7 @@ import rl "vendor:raylib"
 
 import "entity"
 import "utils"
+import "ecs"
 
 PixelWindowHeight :: 180
 
