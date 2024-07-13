@@ -9,31 +9,28 @@ import "core:mem"
 import "core:fmt"
 
 import game ".."
+import "../ecs"
 
 UseTrackingAllocator :: #config(UseTrackingAllocator, false)
 
 main :: proc() {
-	when ODIN_DEBUG {
-        track: mem.Tracking_Allocator
-        mem.tracking_allocator_init(&track, context.allocator)
-        context.allocator = mem.tracking_allocator(&track)
-
-        defer {
-            if len(track.allocation_map) > 0 {
-                fmt.eprintf("=== %v allocations not freed: ===\n", len(track.allocation_map))
-                for _, entry in track.allocation_map {
-                    fmt.eprintf("- %v bytes @ %v\n", entry.size, entry.location)
-                }
-            }
-            if len(track.bad_free_array) > 0 {
-                fmt.eprintf("=== %v incorrect frees: ===\n", len(track.bad_free_array))
-                for entry in track.bad_free_array {
-                    fmt.eprintf("- %p @ %v\n", entry.memory, entry.location)
-                }
-            }
-            mem.tracking_allocator_destroy(&track)
-        }
-    }
+	// when ODIN_DEBUG {
+    //     defer {
+    //         if len(track.allocation_map) > 0 {
+    //             fmt.eprintf("=== %v allocations not freed: ===\n", len(track.allocation_map))
+    //             for _, entry in track.allocation_map {
+    //                 fmt.eprintf("- %v bytes @ %v\n", entry.size, entry.location)
+    //             }
+    //         }
+    //         if len(track.bad_free_array) > 0 {
+    //             fmt.eprintf("=== %v incorrect frees: ===\n", len(track.bad_free_array))
+    //             for entry in track.bad_free_array {
+    //                 fmt.eprintf("- %p @ %v\n", entry.memory, entry.location)
+    //             }
+    //         }
+    //         mem.tracking_allocator_destroy(&track)
+    //     }
+    // }
 
 	when UseTrackingAllocator {
 		default_allocator := context.allocator
@@ -57,12 +54,13 @@ main :: proc() {
 	// logger := logh_err == os.ERROR_NONE ? log.create_file_logger(logh) : log.create_console_logger()
 	// context.logger = logger
 	
-	game.game_init_window()
-	game.game_init()
+	world := ecs.init_ecs()
+	defer ecs.deinit_ecs(&world)
 
-	window_open := true
-	for window_open {
-		window_open = game.game_update()
+	game.init_window(&world)
+	game.init(&world)
+
+	for game.update(&world) {
 
 		// when UseTrackingAllocator {
 		// 	for b in tracking_allocator.bad_free_array {
@@ -76,8 +74,8 @@ main :: proc() {
 	}
 
 	free_all(context.temp_allocator)
-	game.game_shutdown()
-	game.game_shutdown_window()
+	game.shutdown_game(&world)
+	game.shutdown_window(&world)
 	
 	// if logh_err == os.ERROR_NONE {
 	// 	log.destroy_file_logger(logger)
