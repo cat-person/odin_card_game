@@ -10,7 +10,7 @@ import "ecs"
 
 main_screen_ent: ecs.Entity
 card_entity: ecs.Entity
-card_obj := rl.LoadModel("/resources/models/card.obj")
+card_obj : rl.Model 
 
 @(export)
 init_window :: proc(world: ^ecs.Context) {
@@ -26,16 +26,18 @@ init_window :: proc(world: ^ecs.Context) {
 		up = { 0.0, 1.0, 0.0 },
 		fovy = 30
 	})
+
+	card_obj = rl.LoadModel("game/assets/models/card.obj")
+	card_entity = ecs.create_entity(world)
+	ecs.add_component(world, card_entity, card_obj)
+	ecs.add_component(world, card_entity, rl.Vector3{
+		0.05, 0, 0
+	})
 }
 
 @(export)
 init :: proc(world: ^ecs.Context) {
 	
-	card_entity = ecs.create_entity(world)
-	ecs.add_component(world, card_entity, card_obj)
-	ecs.add_component(world, card_entity, rl.Vector3{
-		0.0, 0.0, 0.0
-	})
 }
 
 @(export)
@@ -44,16 +46,14 @@ update :: proc(world: ^ecs.Context) -> bool {
 }
 
 render :: proc(world: ^ecs.Context) -> bool {
-
-	// get camera
 	camera, camera_error := ecs.get_component(world, main_screen_ent, rl.Camera3D)
-	card, _ := ecs.get_component(world, card_entity, rl.Model)
-	// position, position_error := ecs.get_component(world, card_entity, rl.Vector3)
+	card, card_error := ecs.get_component(world, card_entity, rl.Model)
+	position, position_error := ecs.get_component(world, card_entity, rl.Vector3)
 
 	rl.BeginDrawing()
 	rl.ClearBackground(rl.BLACK)
 		rl.BeginMode3D(camera^);
-			rl.DrawModel(card_obj, {0.0, 0.0, 0.0}, 1.0, rl.WHITE);
+			rl.DrawModel(card^, position^, 1.0, rl.PINK);
 			rl.DrawGrid(10, 0.1);
 		rl.EndMode3D();
 	rl.EndDrawing()
