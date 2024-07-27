@@ -22,6 +22,6 @@ Dropped :: struct {
 }
 
 drag :: proc(ctx: esc.Context) {
-
+    // drag card and sheeeet
 
 }
