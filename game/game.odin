@@ -20,8 +20,6 @@ Game :: struct {
 	destroy : proc(game: ^Game),
 }
 
-
-
 new_game :: proc() -> Game {
 	return Game {
 		name = "Odin card game",
@@ -33,6 +31,7 @@ new_game :: proc() -> Game {
 }
 
 game_create :: proc(game: ^Game) {
+	// should also be in ecs
 	rl.SetConfigFlags({.WINDOW_RESIZABLE})
 	rl.InitWindow(1280, 720, game.name)
 	rl.SetWindowPosition(200, 200)
@@ -40,14 +39,14 @@ game_create :: proc(game: ^Game) {
 
 	game.world.init(&game.world)
 
-	game.world.add_entity(&game.world, "camera")
-	game.world.add_entity(&game.world, "something_else")
+	camera_entity := game.world.add_entity(&game.world, rl.Camera3D {
+		position = { 0.0, 0.4, -0.4 } ,
+		target = { 0.0, 0.0, 0.0 },
+		up = { 0.0, 1.0, 0.0 },
+		fovy = 30
+	})
 
-	for entity in game.world.entity_list {
-		fmt.println(entity.name)
-	}
-
-	fmt.println("AAAAAAAAA")
+	game.world.add_system(&game.world, render_camera)
 }
 
 game_update :: proc(game: ^Game) -> bool {
@@ -55,17 +54,16 @@ game_update :: proc(game: ^Game) -> bool {
 	return game_render(game)
 }
 
-game_render :: proc(game: ^Game) -> bool {
-	// camera, camera_error := ecs.get_component(world, main_screen_ent, rl.Camera3D)
-	// card, card_error := ecs.get_component(world, card_entity, rl.Model)
-	// position, position_error := ecs.get_component(world, card_entity, rl.Vector3)
+render_camera :: proc(camera: ..any) {
+	// rl.BeginMode3D(camera);
+	// 	rl.DrawGrid(10, 0.1);
+	// rl.EndMode3D();
+}
 
+game_render :: proc(game: ^Game) -> bool {
 	rl.BeginDrawing()
 	rl.ClearBackground(rl.BLACK)
-		// rl.BeginMode3D(camera^);
-		// 	rl.DrawModel(card^, position^, 1.0, rl.PINK);
-		// 	rl.DrawGrid(10, 0.1);
-		// rl.EndMode3D();
+		
 	rl.EndDrawing()
 
 	return !rl.WindowShouldClose()
