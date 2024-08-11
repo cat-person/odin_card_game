@@ -39,14 +39,14 @@ game_create :: proc(game: ^Game) {
 
 	game.world.init(&game.world)
 
-	camera_entity := game.world.add_entity(&game.world, rl.Camera3D {
+	camera_entity := my_ecs.world_add_entity(&game.world, rl.Camera3D, &rl.Camera3D {
 		position = { 0.0, 0.4, -0.4 } ,
 		target = { 0.0, 0.0, 0.0 },
 		up = { 0.0, 1.0, 0.0 },
 		fovy = 30
 	})
 
-	game.world.add_system(&game.world, render_camera)
+	// world_add_system(&game.world, type_of(rl.Camera3D), &render_camera)
 }
 
 game_update :: proc(game: ^Game) -> bool {
@@ -54,7 +54,7 @@ game_update :: proc(game: ^Game) -> bool {
 	return game_render(game)
 }
 
-render_camera :: proc(camera: ..any) {
+render_camera :: proc(camera: rl.Camera3D) {
 	// rl.BeginMode3D(camera);
 	// 	rl.DrawGrid(10, 0.1);
 	// rl.EndMode3D();

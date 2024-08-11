@@ -25,10 +25,10 @@ World :: struct {
     delete_me_entity_idx: u16,
     delete_me_system_idx: u16,
 
-    add_entity: proc(self: ^World, component: ..any) -> Entity,
-    remove_entity: proc(self: ^World),
+    // add_entity: proc(self: ^World, $T: typeid, component: ^T) -> Entity,
+    // remove_entity: proc(self: ^World),
 
-    add_system: proc(self: ^World, system: proc(params: ..any)),
+    // add_system: proc(self: ^World, system: proc(params: any)),
 
     init : proc(self: ^World),
     update : proc(self: ^World),
@@ -47,10 +47,10 @@ new_world :: proc() -> World {
 
         delete_me_system_idx = 0,
         
-        add_entity = world_add_entity,
-        remove_entity = world_remove_entity,
+        // add_entity = world_add_entity,
+        // remove_entity = world_remove_entity,
 
-        add_system = world_add_system,
+        // add_system = world_add_system,
         // Remove system
 
         init = world_init,
@@ -59,7 +59,7 @@ new_world :: proc() -> World {
     }
 }
 
-world_add_entity :: proc(self: ^World, component: ..any) -> Entity {
+world_add_entity :: proc(self: ^World, $T: typeid, component: ^T) -> Entity {
     self.delete_me_entity_idx += 1
     new_entity := Entity {
         id = self.delete_me_entity_idx,    
@@ -68,7 +68,7 @@ world_add_entity :: proc(self: ^World, component: ..any) -> Entity {
     return new_entity
 }
 
-world_add_system :: proc(self: ^World, system: proc(params: ..any)) {
+world_add_system :: proc(self: ^World, system: proc(params: any)) {
     self.delete_me_system_idx += 1
 
     // new_system := System {
