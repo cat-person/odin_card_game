@@ -3,27 +3,12 @@ package main_release
 import "core:os"
 import "core:mem"
 import "core:fmt"
+import "core:log"
 
-import game ".."
-
-UseTrackingAllocator :: #config(UseTrackingAllocator, false)
+import ecs "../../my_ecs"
 
 main :: proc() {
-	fmt.println("AAAAAAAAA")
-	game := game.new_game()
-
-	game.create(&game) 
-
-	for game.update(&game) {
-		
-	}
-
-	game.destroy(&game)
+	world := ecs.create_world()
+	context.logger = log.create_console_logger()
+	log.error(world)
 }
-
-// make game use good GPU on laptops etc
-@(export)
-NvOptimusEnablement: u32 = 1
-
-@(export)
-AmdPowerXpressRequestHighPerformance: i32 = 1

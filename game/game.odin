@@ -23,7 +23,7 @@ Game :: struct {
 new_game :: proc() -> Game {
 	return Game {
 		name = "Odin card game",
-		world = my_ecs.new_world(),
+		world = my_ecs.new_world,
 		create = game_create,
 		update = game_update,
 		destroy = game_destroy,
@@ -46,18 +46,17 @@ game_create :: proc(game: ^Game) {
 		fovy = 30
 	})
 
-	// world_add_system(&game.world, type_of(rl.Camera3D), &render_camera)
+	my_ecs.world_add_system(&game.world, rl.Camera3D, render_camera)
 }
 
 game_update :: proc(game: ^Game) -> bool {
-	// world.update()
 	return game_render(game)
 }
 
-render_camera :: proc(camera: rl.Camera3D) {
-	// rl.BeginMode3D(camera);
-	// 	rl.DrawGrid(10, 0.1);
-	// rl.EndMode3D();
+render_camera :: proc(camera: ^rl.Camera3D) {
+	rl.BeginMode3D(camera^);
+		rl.DrawGrid(10, 0.1);
+	rl.EndMode3D();
 }
 
 game_render :: proc(game: ^Game) -> bool {
