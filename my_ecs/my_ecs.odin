@@ -9,7 +9,9 @@ Entity :: struct {
 
 World :: struct {
     entity_list: #soa[dynamic]Entity,
+    systems: [dynamic]proc(value: int)
 }
+
 
 create_world :: proc(/*mem allocator*/) -> World {
     fmt.println("VVVVVVVVVVVVVVVVVV")
@@ -18,4 +20,12 @@ create_world :: proc(/*mem allocator*/) -> World {
     }
 }
 
-//stringify_world()
+delete_me_call_all :: proc(world: ^World, value: int) {
+    for system in world.systems {
+        system(value)
+    }
+}
+
+add_system :: proc(world: ^World, system: proc(value: int)) {
+    append(&world.systems, system)
+}
