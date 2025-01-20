@@ -12,9 +12,12 @@ main :: proc() {
 	context.logger = log.create_console_logger()
 	log.error(world)
 
-	ecs.add_system(&world, hello_system)
-	ecs.add_system(&world, bye_system)
-	ecs.delete_me_call_all(&world, 2)
+	ecs.add_system(&world, cast(rawptr)hello_system, int)
+	ecs.add_system(&world, cast(rawptr)bye_system, int)
+	ecs.add_system(&world, cast(rawptr)hello_username, string)
+
+	ecs.delete_me_call_all(&world)
+	hello_username("meow")
 }
 
 hello_system :: proc(value: int) {
@@ -23,4 +26,8 @@ hello_system :: proc(value: int) {
 
 bye_system :: proc(value: int) {
 	log.error("Bye", value)
+}
+
+hello_username :: proc(username: string) {
+	log.error("Hello", username)
 }
