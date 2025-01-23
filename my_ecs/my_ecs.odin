@@ -1,14 +1,9 @@
 package my_ecs
 
-import "core:reflect"
 import "core:fmt"
 
-Entity :: struct {
-    components: map[string]typeid
-}
-
 World :: struct {
-    entity_list: #soa[dynamic]Entity,
+    entity_list: [dynamic]string,
     systems: map[typeid]rawptr
 }
 
@@ -28,3 +23,27 @@ delete_me_call_all :: proc(world: ^World) {
 add_system :: proc(world: ^World, system: rawptr, arg_types: typeid) {
     world.systems[arg_types] = system
 }
+
+add_entity :: proc (world: ^World, components: ..any) -> string {
+    entity_id := calc_id_1()
+    append(&world.entity_list, entity_id)
+    return entity_id
+}
+
+Entity :: struct {
+    id: string,
+    components: []any
+}
+
+calc_id_1 :: proc(components: ..any) -> string {
+    return "1"
+}
+
+create_entity :: proc(components: ..any) -> Entity {
+    return Entity {
+        id = calc_id_1(components),
+        components = components
+    }
+}
+
+

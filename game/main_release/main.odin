@@ -12,6 +12,8 @@ main :: proc() {
 	context.logger = log.create_console_logger()
 	log.error(world)
 
+	ecs.add_entity(&world, 1, "aaaa")
+
 	ecs.add_system(&world, cast(rawptr)hello_system, int)
 	ecs.add_system(&world, cast(rawptr)bye_system, int)
 	ecs.add_system(&world, cast(rawptr)hello_username, string)
