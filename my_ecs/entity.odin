@@ -1,2 +1,0 @@
-package my_ecs
-

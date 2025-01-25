@@ -3,15 +3,18 @@ package my_ecs
 import "core:fmt"
 
 World :: struct {
-    entity_list: [dynamic]string,
-    systems: map[typeid]rawptr
+    entities: map[EntityId]Entity,
+//    args_typeids_by_system: map[SystemId]typeid,
+    systems: map[SystemId]proc(args: Component)
+
 }
 
-create_world :: proc(/*mem allocator*/entities: ..Entity) -> World {
-    fmt.println("VVVVVVVVVVVVVVVVVV")
-    return World {
-//        entity_list = entities
-    }
+EntityId :: distinct u16
+SystemId :: distinct u16
+
+create_world :: proc(/*mem allocator*/) -> World {
+    fmt.println("create world")
+    return World {}
 }
 
 delete_me_call_all :: proc(world: ^World) {
@@ -20,30 +23,66 @@ delete_me_call_all :: proc(world: ^World) {
     }
 }
 
-add_system :: proc(world: ^World, system: rawptr, arg_types: typeid) {
-    world.systems[arg_types] = system
+add_system :: proc(world: ^World, $T: typeid, system: proc(args: T)) {
+    system_id := calc_system_id(world)
+    world.systems[system_id] = cast(proc(args: Component))system
+//    world.args_typeids_by_system[system_id] = arg_types
+
+    fmt.println(system)
 }
 
-add_entity :: proc (world: ^World, components: ..any) -> string {
-    entity_id := calc_id_1()
-    append(&world.entity_list, entity_id)
+//add_system :: proc(world: ^World, system: rawptr, arg_types: ..typeid) {
+//    system_id := calc_system_id(world)
+//    world.systems[system_id] = system
+//    world.args_typeids_by_system[system_id] = arg_types
+//}
+
+add_entity :: proc (world: ^World, components: []any) -> EntityId {
+    entity_id := calc_id(world, components)
+    world.entities[entity_id] = Entity {
+        id = entity_id,
+        components = components
+    }
     return entity_id
 }
 
 Entity :: struct {
-    id: string,
+    id: EntityId,
     components: []any
 }
 
-calc_id_1 :: proc(components: ..any) -> string {
-    return "1"
+calc_id :: proc(world: ^World, components: []any) -> EntityId {
+    return EntityId(len(world.entities))
 }
 
-create_entity :: proc(components: ..any) -> Entity {
-    return Entity {
-        id = calc_id_1(components),
-        components = components
+calc_system_id :: proc(world: ^World) -> SystemId {
+    fmt.println("ecs::calc_system_id: ", len(world.systems))
+    return SystemId(len(world.systems))
+}
+
+update_world ::proc(world: ^World) {
+    for system_id in world.systems {
+        fmt.println("my_ecs::update_world calling", world.systems[system_id])
+//        args_typeids := world.args_typeids_by_system[system_id]
+//        fmt.println("my_ecs::update_world args_typeids", args_typeids[0])
+
+        (cast(proc(Name))world.systems[system_id])(Name("John"))
     }
 }
 
 
+PawCount :: distinct int
+Name :: distinct string
+Sound :: distinct string
+
+
+
+Component :: union {
+    PawCount,
+    Name,
+    Sound,
+}
+
+//System :: union($T: Component) {
+//    proc($a: $T)
+//}

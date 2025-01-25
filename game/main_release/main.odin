@@ -9,27 +9,34 @@ import ecs "../../my_ecs"
 
 main :: proc() {
 	world := ecs.create_world()
+
 	context.logger = log.create_console_logger()
-	log.error(world)
 
-	ecs.add_entity(&world, 1, "aaaa")
+	ecs.add_entity(&world, {ecs.Name("Lucky"), ecs.PawCount(4), ecs.Sound("Meow")})
+	ecs.add_entity(&world, {ecs.Name("Nemo")})
 
-	ecs.add_system(&world, cast(rawptr)hello_system, int)
-	ecs.add_system(&world, cast(rawptr)bye_system, int)
-	ecs.add_system(&world, cast(rawptr)hello_username, string)
+	ecs.add_system(&world, ecs.Name, hello_username)
+//	ecs.add_system(&world, rawptr(put_on_shoes), PawCount)
+//	ecs.add_system(&world, rawptr(do_a_sound), Name, Sound)
 
-	ecs.delete_me_call_all(&world)
-	hello_username("meow")
+	hello_username(ecs.Name("from main John"))
+
+	ecs.update_world(&world)
+
+//	log.error(world)
 }
 
-hello_system :: proc(value: int) {
-	log.error("Hello", value)
+put_on_shoes :: proc(value: ecs.PawCount) {
+	for paw_idx in 0..<value {
+		log.error("Put on shoes on paw", value)
+	}
 }
 
-bye_system :: proc(value: int) {
-	log.error("Bye", value)
+hello_username :: proc(name: ecs.Name) {
+
+	log.error("Hello", name)
 }
 
-hello_username :: proc(username: string) {
-	log.error("Hello", username)
+do_a_sound :: proc(name: ecs.Name, sound: ecs.Sound) {
+	log.error(fmt.aprintfln("%s says %s", name, sound))
 }
