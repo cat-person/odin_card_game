@@ -15,10 +15,6 @@ SystemId :: distinct u16
 create_world :: proc(/*mem allocator*/) -> World {
     fmt.println("create world")
     world := World {}
-//    world.components[typeid_of(Name)] = []{
-//        cast(Component)Name("John"),
-//        cast(Component)Name("Karen")
-//    }
     return world
 }
 
@@ -60,19 +56,9 @@ calc_system_id :: proc(world: ^World) -> SystemId {
 }
 
 update_world ::proc(world: ^World) {
-    get_system(int)(42)
-//    saved_typeid := typeid_of(int)
-
-//    get_system(type_of(42))(42)
-}
-
-get_system :: proc($T: typeid) -> proc(args: T) {
-    if(T == int) {
-        return proc(value: int) {
-            fmt.println("Hello int value", value)
-        }
+    for system_id in world.systems {
+        call_system(world, Name, world.systems[system_id])
     }
-    return nil
 }
 
 PawCount :: distinct int
@@ -85,25 +71,20 @@ Component :: union {
     Sound,
 }
 
+call_system :: proc(world: ^World, arg_type: typeid, system: rawptr) {
+    fmt.println("ecs.call_system", arg_type, system)
+    fmt.println("ecs.get_components")
+    switch(arg_type) {
+        case Name:
+            hardcoded_names := [?]Name{
+                Name("John"),
+                Name("Karen")
+            }
+            for name in hardcoded_names {
+                fmt.println("ecs.get_components")
+                (cast(proc(Name))system)(name)
+            }
 
-
-//System :: struct {
-//    argType: typeid,
-//    system: proc(Component)
-//}
-
-//call_system :: proc(world: ^World, arg_type: typeid, system: proc(Component)) {
-//    fmt.println("ecs.call_system", arg_type, system)
-//    fmt.println("ecs.get_components")
-//    components := []{
-//        Name("John"),
-//        Name("Karen")
-//    }
-//
-////    fmt.println("ecs.get_components", components)
-//    for component in components {
-//        fmt.println("ecs.get_components", component)
-//        name := cast(Name)component
-//        (cast(proc(Name))system)(name)
-//    }
-//}
+        case PawCount:
+    }
+}
