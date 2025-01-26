@@ -33,7 +33,6 @@ put_on_shoes :: proc(value: ecs.PawCount) {
 }
 
 hello_username :: proc(name: ecs.Name) {
-
 	log.error("Hello", name)
 }
 

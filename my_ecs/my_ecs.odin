@@ -6,8 +6,7 @@ World :: struct {
     entities: map[EntityId]Entity,
     components: map[typeid][]Component,
     args_typeids_by_system: map[SystemId]typeid,
-    systems: map[SystemId]proc(Component)
-
+    systems: map[SystemId]rawptr
 }
 
 EntityId :: distinct u16
@@ -31,8 +30,8 @@ delete_me_call_all :: proc(world: ^World) {
 
 add_system :: proc(world: ^World, $T: typeid, system: proc(args: T)) {
     system_id := calc_system_id(world)
-    world.systems[system_id] = cast(proc(Component))system
-    world.args_typeids_by_system[system_id] = T
+    world.systems[system_id] = cast(rawptr)system
+//    world.args_typeids_by_system[system_id] = T
 
     fmt.println(system)
 }
@@ -61,24 +60,20 @@ calc_system_id :: proc(world: ^World) -> SystemId {
 }
 
 update_world ::proc(world: ^World) {
-    for system_id in world.systems {
-        arg_type := world.args_typeids_by_system[system_id]
-        system := world.systems[system_id]
+    get_system(int)(42)
+//    saved_typeid := typeid_of(int)
 
-        call_system(world, arg_type, system)
-    }
+//    get_system(type_of(42))(42)
 }
 
-//get_components :: proc(type: typeid) {
-//    if(T == Name) {
-//        return {
-//            Name("John"),
-//            Name("Karen")
-//        }
-//    }
-//    return nil
-//}
-
+get_system :: proc($T: typeid) -> proc(args: T) {
+    if(T == int) {
+        return proc(value: int) {
+            fmt.println("Hello int value", value)
+        }
+    }
+    return nil
+}
 
 PawCount :: distinct int
 Name :: distinct string
@@ -90,22 +85,25 @@ Component :: union {
     Sound,
 }
 
+
+
 //System :: struct {
 //    argType: typeid,
 //    system: proc(Component)
 //}
 
-call_system :: proc(world: ^World, arg_type: typeid, system: proc(Component)) {
-    fmt.println("ecs.call_system", arg_type, system)
-    fmt.println("ecs.get_components")
-    components := []Name{
-        Name("John"),
-        Name("Karen")
-    }
-    
-//    fmt.println("ecs.get_components", components)
-    for component in components {
-        fmt.println("ecs.get_components", component)
-        (cast(proc(Name))system)(component)
-    }
-}
+//call_system :: proc(world: ^World, arg_type: typeid, system: proc(Component)) {
+//    fmt.println("ecs.call_system", arg_type, system)
+//    fmt.println("ecs.get_components")
+//    components := []{
+//        Name("John"),
+//        Name("Karen")
+//    }
+//
+////    fmt.println("ecs.get_components", components)
+//    for component in components {
+//        fmt.println("ecs.get_components", component)
+//        name := cast(Name)component
+//        (cast(proc(Name))system)(name)
+//    }
+//}
