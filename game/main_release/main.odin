@@ -9,41 +9,20 @@ import "core:reflect"
 
 main :: proc() {
 	context.logger = log.create_console_logger()
-
-	some_data := SomeComplexData {
-		id = "1",
-		number = 123
-	}
-
-	hello_username(some_data)
-
-	hello_username_raw(transmute([size_of(SomeComplexData)]byte)some_data)
-
-	buffer := bytes.Buffer{};
-
-//	bytes.buffer_write(&buffer, transmute([]byte)BigNum(123))
+	hello_username(transmute([size_of(Name)]byte)Name("Johny"))
 }
 
-
-
-BigNum :: distinct i128
-
-SomeComplexData :: struct {
-	id: string,
-	number: int,
-	data: []byte
+handle_query :: proc($T: typeid, raw_data: [size_of(T)]byte, logic: proc(T)) {
+	logic(transmute(T)raw_data)
 }
 
-System :: struct($T: typeid) {
-hello_username_raw : proc(raw_data: [size_of(SomeComplexData)]byte) {
-	data := transmute(SomeComplexData)raw_data
-	hello_username(data)
+hello_username :: proc(raw_data: [size_of(Name)]byte) {
+	handle_query(Name, raw_data, proc(name: Name) {
+		log.error("Hello", name)
+	})
 }
 
-hello_username :  proc(data: SomeComplexData) {
-	log.error("Hello", data)
-}
-}
+Name :: distinct string
 
 //	world := ecs.create_world()
 //
