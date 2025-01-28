@@ -7,7 +7,7 @@ Buffer :: bytes.Buffer
 
 World :: struct {
     entities: map[EntityId]Entity,
-    components: map[typeid]Buffer,
+    components: map[typeid]Query,
 
     args_typeids_by_system: map[SystemId]typeid,
     systems: map[SystemId]rawptr
