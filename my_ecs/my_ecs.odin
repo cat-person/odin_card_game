@@ -2,70 +2,25 @@ package my_ecs
 
 import "core:fmt"
 import "core:bytes"
-
-Buffer :: bytes.Buffer
+import "core:log"
 
 World :: struct {
     entities: map[EntityId]Entity,
     components: map[typeid]Query,
-
-    args_typeids_by_system: map[SystemId]typeid,
-    systems: map[SystemId]rawptr
+    systems: map[typeid]proc(^Query)
 }
 
-EntityId :: distinct u16
-SystemId :: distinct u16
-
 create_world :: proc(/*mem allocator*/) -> World {
-    fmt.println("create world")
     world := World {}
-//    name_buffer := bytes.new_buffer()
-//    name_buffer.write_string
-
-//    world.components[Name] = Buffer
-//        transmute([]byte)Name("John"),
-//        transmute([]byte)Name("Karen")
-//    }
-//
-//    paws_buffer := bytes.new_buffer()
-//    paws_buffer := bytes.new_buffer()
-//
-//    world.components[PawCount] = [][]byte{
-//        transmute([]byte)PawCount(2),
-//        transmute([]byte)PawCount(4)
-//    }
     return world
 }
 
-delete_me_call_all :: proc(world: ^World) {
-    for system_type_id in world.systems {
-        fmt.println("delete_me_call_all", system_type_id)
-    }
-}
-
-add_system_1 :: proc(world: ^World, $T: typeid, system: proc(arg: T)) {
-    system_id := calc_system_id(world)
-    world.systems[system_id] = cast(rawptr)system
-    world.args_typeids_by_system[system_id] = T
-
-    fmt.println(system)
-}
-
-//add_system_2 :: proc(world: ^World, $T1: typeid, $T2: typeid, system: proc(arg1: T1, arg2: T2)) {
-//    system_id := calc_system_id(world)
-//    world.systems[system_id] = cast(rawptr)system
-//    world.args_typeids_by_system[system_id] = []typeid{T1, T2}
-//
-//    fmt.println(system)
-//}
-
-add_system :: proc {
-    add_system_1,
-//    add_system_2
+add_system :: proc(world: ^World, data_type: typeid, system: proc(^Query)) {
+    world.systems[data_type] = system
 }
 
 add_entity :: proc (world: ^World, components: []any) -> EntityId {
-    entity_id := calc_id(world, components)
+    entity_id := calc_entity_id(world)
     world.entities[entity_id] = Entity {
         id = entity_id,
         components = components
@@ -73,61 +28,42 @@ add_entity :: proc (world: ^World, components: []any) -> EntityId {
     return entity_id
 }
 
-Entity :: struct {
-    id: EntityId,
-    components: []any
-}
+denormilise_entities :: proc(entities: ^map[EntityId]Entity, systems: map[typeid]proc(^Query)) -> map[typeid]Query {
+    queries := map[typeid]Query {}
 
-calc_id :: proc(world: ^World, components: []any) -> EntityId {
-    return EntityId(len(world.entities))
-}
+    for data_type in systems {
+        entity_data := [dynamic]byte {}
 
-calc_system_id :: proc(world: ^World) -> SystemId {
-    fmt.println("ecs::calc_system_id: ", len(world.systems))
-    return SystemId(len(world.systems))
+        for entity_id, entity in entities {
+            for component in entity.components {
+                if(typeid_of(type_of(component)) == data_type) {
+                    component_bytes := transmute([size_of(component)]byte)component
+                    append(&entity_data, ..component_bytes[:])
+                }
+            }
+        }
+        queries[data_type] = Query {
+            data_type = data_type,
+            data_size = size_of(data_type),
+
+            data = entity_data[:]
+        }
+    }
+    return queries
 }
 
 update_world ::proc(world: ^World) {
-    for system_id in world.systems {
-        call_system(world, world.args_typeids_by_system[system_id], world.systems[system_id])
-    }
-}
+    components := denormilise_entities(&world.entities, world.systems)
 
-PawCount :: distinct int
-Name :: distinct string
-Sound :: distinct string
+    log.error("update_world entities = ", world.entities)
+    log.error("update_world systems = ", world.systems)
 
-Component :: union {
-    PawCount,
-    Name,
-    Sound,
-}
+    log.error("update_world components = ", components)
 
-//Archetype :: struct($T1, $T: typeid) {
-//
-//}
-
-call_system :: proc(world: ^World, arg_type: typeid, system: rawptr) {
-    fmt.println("ecs.call_system", arg_type, system)
-
-    switch(arg_type) {
-        case Name:
-            fmt.println("ecs.call_system", arg_type, system)
-            hardcoded_names := [?]Name{
-                Name("John"),
-                Name("Karen")
-            }
-            for name in hardcoded_names {
-                (cast(proc(Name))system)(name)
-            }
-        case PawCount: {
-            hardcoded_paw_counts := [?]PawCount{
-                PawCount(2),
-                PawCount(4)
-            }
-            for paw_count in hardcoded_paw_counts {
-                (cast(proc(PawCount))system)(paw_count)
-            }
+    for data_type in world.systems {
+        if(data_type in components) {
+            query := components[data_type]
+            world.systems[data_type](&query)
         }
     }
 }

@@ -19,15 +19,37 @@ main :: proc() {
 			Name("Beth"),
 		}
 	}
-	hello_username(&query)
-}
 
+	world := ecs.create_world()
 
-
-hello_username :: proc(query: ^ecs.Query) {
-	ecs.handle_query(query, Name, proc(name: Name) {
-		log.error("Hello", name)
+	ecs.add_system(&world, Name, hello_username)
+	ecs.add_entity(&world, []any{
+		Name("Johny"),
+		Kind("Doggo"),
+		PawCount(4),
 	})
+	ecs.add_entity(&world, []any{
+		Name("Lucky"),
+		Kind("Gato"),
+		PawCount(4),
+	})
+
+	ecs.update_world(&world)
 }
 
 Name :: distinct string
+Kind :: distinct string
+PawCount :: distinct u8
+
+Composite :: struct {
+	id: Name,
+	sound: Kind,
+	paw_count: PawCount
+}
+
+
+hello_username :: proc(name_query: ^ecs.Query) {
+	ecs.handle_query(name_query, Name, proc(name: Name) {
+		log.error("Hello", name)
+	})
+}

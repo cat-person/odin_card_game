@@ -16,3 +16,7 @@ handle_query :: proc(query: ^Query, $T: typeid, logic: proc(T)) {
 read_all :: proc(query: ^Query, $T: typeid) -> []T {
     return transmute([]T)query.data
 }
+
+build_queries :: proc(entities: []Entity) {
+
+}
