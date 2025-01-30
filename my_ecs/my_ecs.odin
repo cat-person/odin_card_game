@@ -3,6 +3,7 @@ package my_ecs
 import "core:fmt"
 import "core:bytes"
 import "core:log"
+import "core:reflect"
 
 World :: struct {
     entities: map[EntityId]Entity,
@@ -19,11 +20,16 @@ add_system :: proc(world: ^World, data_type: typeid, system: proc(^Query)) {
     world.systems[data_type] = system
 }
 
-add_entity :: proc (world: ^World, components: []any) -> EntityId {
+add_entity :: proc (world: ^World, $T: typeid, component: T) -> EntityId {
+    component_map := map[typeid][]byte {}
+
+    component_bytes := transmute([]byte)component
+    component_map[T] = component_bytes
+
     entity_id := calc_entity_id(world)
     world.entities[entity_id] = Entity {
         id = entity_id,
-        components = components
+        components = component_map
     }
     return entity_id
 }
@@ -32,13 +38,18 @@ denormilise_entities :: proc(entities: ^map[EntityId]Entity, systems: map[typeid
     queries := map[typeid]Query {}
 
     for data_type in systems {
-        entity_data := [dynamic]byte {}
+        entity_data := make([dynamic]byte, 0, 16)
 
         for entity_id, entity in entities {
-            for component in entity.components {
-                if(typeid_of(type_of(component)) == data_type) {
-                    component_bytes := transmute([size_of(component)]byte)component
-                    append(&entity_data, ..component_bytes[:])
+            for component_id, component_data in entity.components {
+                log.error("denormilise_entities component_data type", component_data)
+                log.error("denormilise_entities typeid_of(type_of(component)", component_id)
+                log.error("denormilise_entities data_type", data_type)
+                log.error("denormilise_entities component_id == data_type", component_id == data_type)
+                if(component_id == data_type) {
+//                    for component_byte in component_data {
+                    append(&entity_data, ..component_data)
+//                    }
                 }
             }
         }
@@ -49,6 +60,9 @@ denormilise_entities :: proc(entities: ^map[EntityId]Entity, systems: map[typeid
             data = entity_data[:]
         }
     }
+
+//    log.error("denormilise_entities component_data queries", queries)
+
     return queries
 }
 
@@ -63,6 +77,10 @@ update_world ::proc(world: ^World) {
     for data_type in world.systems {
         if(data_type in components) {
             query := components[data_type]
+
+            log.error("update_world data_type = ", data_type)
+            log.error("update_world query = ", query)
+
             world.systems[data_type](&query)
         }
     }

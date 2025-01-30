@@ -23,23 +23,21 @@ main :: proc() {
 	world := ecs.create_world()
 
 	ecs.add_system(&world, Name, hello_username)
-	ecs.add_entity(&world, []any{
-		Name("Johny"),
-		Kind("Doggo"),
-		PawCount(4),
-	})
-	ecs.add_entity(&world, []any{
-		Name("Lucky"),
-		Kind("Gato"),
-		PawCount(4),
-	})
+//	ecs.add_entity(&world, {
+//		Name = transmute([]byte)Name("Johny"),
+//		Kind = transmute([]byte)Kind("Doggo"),
+//		PawCount = transmute([]byte)PawCount(4),
+//	})
+	ecs.add_entity(&world, PawCount, PawCount(4))
+	ecs.add_entity(&world, Name, Name("Gravitsapa"))
+	ecs.add_entity(&world, Kind, Kind("AAAAA"))
 
 	ecs.update_world(&world)
 }
 
 Name :: distinct string
 Kind :: distinct string
-PawCount :: distinct u8
+PawCount :: distinct u128
 
 Composite :: struct {
 	id: Name,
@@ -47,9 +45,9 @@ Composite :: struct {
 	paw_count: PawCount
 }
 
-
 hello_username :: proc(name_query: ^ecs.Query) {
+	log.error("hello_username name_query = ", name_query)
 	ecs.handle_query(name_query, Name, proc(name: Name) {
-		log.error("Hello", name)
+		log.error("hello_username name", name)
 	})
 }
