@@ -23,7 +23,13 @@ add_system :: proc(world: ^World, data_type: typeid, system: proc(^Query)) {
 add_entity :: proc (world: ^World, $T: typeid, component: T) -> EntityId {
     component_map := map[typeid][]byte {}
 
-    component_bytes := transmute([]byte)component
+    component_bytes := make([]byte, size_of(T))
+    transmuted_bytes := transmute([size_of(T)]byte)component
+
+    for data, byte_idx in transmuted_bytes {
+        component_bytes[byte_idx] = data
+    }
+
     component_map[T] = component_bytes
 
     entity_id := calc_entity_id(world)
@@ -41,11 +47,9 @@ denormilise_entities :: proc(entities: ^map[EntityId]Entity, systems: map[typeid
         entity_data := make([dynamic]byte, 0, 16)
 
         for entity_id, entity in entities {
+            log.error("denormilise_entities entity", entity)
             for component_id, component_data in entity.components {
-                log.error("denormilise_entities component_data type", component_data)
-                log.error("denormilise_entities typeid_of(type_of(component)", component_id)
-                log.error("denormilise_entities data_type", data_type)
-                log.error("denormilise_entities component_id == data_type", component_id == data_type)
+
                 if(component_id == data_type) {
 //                    for component_byte in component_data {
                     append(&entity_data, ..component_data)
