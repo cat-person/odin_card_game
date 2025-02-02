@@ -4,8 +4,6 @@ import "core:log"
 
 Query :: struct {
     data_type: typeid,
-    data_size: int,
-
     data: []byte,
 }
 

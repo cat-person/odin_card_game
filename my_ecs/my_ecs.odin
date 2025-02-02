@@ -4,6 +4,7 @@ import "core:fmt"
 import "core:bytes"
 import "core:log"
 import "core:reflect"
+import "core:mem"
 
 World :: struct {
     entities: map[EntityId]Entity,
@@ -20,17 +21,21 @@ add_system :: proc(world: ^World, data_type: typeid, system: proc(^Query)) {
     world.systems[data_type] = system
 }
 
-add_entity :: proc (world: ^World, $T: typeid, component: T) -> EntityId {
+add_entity :: proc (world: ^World, components: []any) -> EntityId {
     component_map := map[typeid][]byte {}
+    for component in components {
+        log.error("add_entity", component)
+        info := reflect.type_info_base(type_info_of(component.id))
+        log.error("add_entity info size", info.size)
 
-    component_bytes := make([]byte, size_of(T))
-    transmuted_bytes := transmute([size_of(T)]byte)component
+        component_bytes := make([]byte, info.size)
 
-    for data, byte_idx in transmuted_bytes {
-        component_bytes[byte_idx] = data
+        log.error("add_entity component.data", component.data)
+
+        mem.copy(raw_data(component_bytes), component.data, info.size)
+
+        component_map[component.id] = component_bytes
     }
-
-    component_map[T] = component_bytes
 
     entity_id := calc_entity_id(world)
     world.entities[entity_id] = Entity {
@@ -59,8 +64,6 @@ denormilise_entities :: proc(entities: ^map[EntityId]Entity, systems: map[typeid
         }
         queries[data_type] = Query {
             data_type = data_type,
-            data_size = size_of(data_type),
-
             data = entity_data[:]
         }
     }

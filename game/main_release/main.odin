@@ -27,7 +27,9 @@ main :: proc() {
 //		Kind = transmute([]byte)Kind("Doggo"),
 //		PawCount = transmute([]byte)PawCount(4),
 //	})
-	ecs.add_entity(&world, PawCount, PawCount(4))
+	ecs.add_entity(&world, {PawCount(4)})
+	ecs.add_entity(&world, {PawCount(8)})
+	ecs.add_entity(&world, {PawCount(2)})
 //	ecs.add_entity(&world, Name, Name("Gravitsapa"))
 //	ecs.add_entity(&world, Kind, Kind("AAAAA"))
 //	ecs.add_system(&world, Name, hello_username)
