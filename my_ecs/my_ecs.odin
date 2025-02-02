@@ -21,7 +21,7 @@ add_system :: proc(world: ^World, data_type: typeid, system: proc(^Query)) {
     world.systems[data_type] = system
 }
 
-add_entity :: proc (world: ^World, components: []any) -> EntityId {
+add_entity :: proc (world: ^World, components: ..any) -> EntityId {
     component_map := map[typeid][]byte {}
     for component in components {
         log.error("add_entity", component)
