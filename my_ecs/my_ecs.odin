@@ -24,16 +24,9 @@ add_system :: proc(world: ^World, data_type: typeid, system: proc(^Query)) {
 add_entity :: proc (world: ^World, components: ..any) -> EntityId {
     component_map := map[typeid][]byte {}
     for component in components {
-        log.error("add_entity", component)
-        info := reflect.type_info_base(type_info_of(component.id))
-        log.error("add_entity info size", info.size)
-
-        component_bytes := make([]byte, info.size)
-
-        log.error("add_entity component.data", component.data)
-
-        mem.copy(raw_data(component_bytes), component.data, info.size)
-
+        component_size := reflect.type_info_base(type_info_of(component.id)).size
+        component_bytes := make([]byte, component_size)
+        mem.copy(raw_data(component_bytes), component.data, component_size)
         component_map[component.id] = component_bytes
     }
 
@@ -52,7 +45,7 @@ denormilise_entities :: proc(entities: ^map[EntityId]Entity, systems: map[typeid
         entity_data := make([dynamic]byte, 0, 16)
 
         for entity_id, entity in entities {
-            log.error("denormilise_entities entity", entity)
+//            log.error("denormilise_entities entity", entity)
             for component_id, component_data in entity.components {
 
                 if(component_id == data_type) {
@@ -76,18 +69,9 @@ denormilise_entities :: proc(entities: ^map[EntityId]Entity, systems: map[typeid
 update_world ::proc(world: ^World) {
     components := denormilise_entities(&world.entities, world.systems)
 
-    log.error("update_world entities = ", world.entities)
-    log.error("update_world systems = ", world.systems)
-
-    log.error("update_world components = ", components)
-
     for data_type in world.systems {
         if(data_type in components) {
             query := components[data_type]
-
-            log.error("update_world data_type = ", data_type)
-            log.error("update_world query = ", query)
-
             world.systems[data_type](&query)
         }
     }

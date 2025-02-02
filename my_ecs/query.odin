@@ -8,10 +8,6 @@ Query :: struct {
 }
 
 handle_query :: proc(query: ^Query, $T: typeid, logic: proc(T)) {
-    log.error("handle_query query = ", query)
-    log.error("handle_query query size = ", size_of(query.data))
-
-    log.error("handle_query read_all(query, T) = ", read_all(query, T))
     for data in read_all(query, T) {
         logic(data)
     }
@@ -27,6 +23,5 @@ read_all :: proc(query: ^Query, $T: typeid) -> []T {
         }
         result[data_idx] = transmute(T)(bytes)
     }
-    log.error("read_all result = ", result)
     return result
 }

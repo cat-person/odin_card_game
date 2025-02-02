@@ -27,21 +27,21 @@ main :: proc() {
 //		Kind = transmute([]byte)Kind("Doggo"),
 //		PawCount = transmute([]byte)PawCount(4),
 //	})
-	ecs.add_entity(&world, PawCount(4))
-	ecs.add_entity(&world, PawCount(8))
-	ecs.add_entity(&world, PawCount(2))
+	ecs.add_entity(&world, Name("Lucky"), Kind("Gato"), PawCount(4))
+	ecs.add_entity(&world, Name("Octopus"), Kind("Octocat"), PawCount(8))
+	ecs.add_entity(&world, Name("George"), Kind("Human"), PawCount(2))
 //	ecs.add_entity(&world, Name, Name("Gravitsapa"))
 //	ecs.add_entity(&world, Kind, Kind("AAAAA"))
-//	ecs.add_system(&world, Name, hello_username)
 
 	ecs.add_system(&world, PawCount, put_on_shoes)
-//	ecs.add_system(&world, Kind, print_kinds)
+	ecs.add_system(&world, Kind, print_kinds)
+	ecs.add_system(&world, Name, hello_username)
 
 	ecs.update_world(&world)
 }
 
-//Name :: distinct string
-//Kind :: distinct string
+Name :: distinct string
+Kind :: distinct string
 PawCount :: distinct u8
 
 //Composite :: struct {
@@ -50,24 +50,23 @@ PawCount :: distinct u8
 //	paw_count: PawCount
 //}
 
-//hello_username :: proc(name_query: ^ecs.Query) {
-//	ecs.handle_query(name_query, Name, proc(name: Name) {
-//		log.error("hello_username name", name)
-//	})
-//}
+hello_username :: proc(name_query: ^ecs.Query) {
+	ecs.handle_query(name_query, Name, proc(name: Name) {
+		log.error("hello_username name", name)
+	})
+}
 
 put_on_shoes :: proc(query: ^ecs.Query) {
-	log.error("put_on_shoes query = ", query)
 	ecs.handle_query(query, PawCount, proc(paw_count: PawCount) {
 		log.error("put_on_shoes paw_count = ", paw_count)
 		for paw_idx in 0..<paw_count {
-			log.error("put_on_shoe on the paw #", paw_idx + 1)
+			//log.error("put_on_shoe on the paw #", paw_idx + 1)
 		}
 	})
 }
-//
-//print_kinds :: proc(query: ^ecs.Query) {
-//	ecs.handle_query(query, Kind, proc(kind: Kind) {
-//		log.error("print kinds = ", kind)
-//	})
-//}
+
+print_kinds :: proc(query: ^ecs.Query) {
+	ecs.handle_query(query, Kind, proc(kind: Kind) {
+		log.error("print kinds = ", kind)
+	})
+}
