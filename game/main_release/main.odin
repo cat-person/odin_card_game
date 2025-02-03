@@ -11,31 +11,17 @@ import ecs "../../my_ecs"
 
 main :: proc() {
 	context.logger = log.create_console_logger()
-//	query := ecs.Query {
-//		data_type = Name,
-//		data_size = size_of(Name),
-//		data = transmute([]byte) []Name {
-//			Name("Johny"),
-//			Name("Beth"),
-//		}
-//	}
 
 	world := ecs.create_world()
 
-//	ecs.add_entity(&world, {
-//		Name = transmute([]byte)Name("Johny"),
-//		Kind = transmute([]byte)Kind("Doggo"),
-//		PawCount = transmute([]byte)PawCount(4),
-//	})
 	ecs.add_entity(&world, Name("Lucky"), Kind("Gato"), PawCount(4))
 	ecs.add_entity(&world, Name("Octopus"), Kind("Octocat"), PawCount(8))
 	ecs.add_entity(&world, Name("George"), Kind("Human"), PawCount(2))
-//	ecs.add_entity(&world, Name, Name("Gravitsapa"))
-//	ecs.add_entity(&world, Kind, Kind("AAAAA"))
 
 	ecs.add_system(&world, PawCount, put_on_shoes)
 	ecs.add_system(&world, Kind, print_kinds)
 	ecs.add_system(&world, Name, hello_username)
+	ecs.add_system(&world, Kind, Name, hello_kind_and_name)
 
 	ecs.update_world(&world)
 }
@@ -44,15 +30,16 @@ Name :: distinct string
 Kind :: distinct string
 PawCount :: distinct u8
 
-//Composite :: struct {
-//	id: Name,
-//	sound: Kind,
-//	paw_count: PawCount
-//}
 
 hello_username :: proc(name_query: ^ecs.Query) {
 	ecs.handle_query(name_query, Name, proc(name: Name) {
-		log.error("hello_username name", name)
+		log.error("hello", name)
+	})
+}
+
+print_kinds :: proc(query: ^ecs.Query) {
+	ecs.handle_query(query, Kind, proc(kind: Kind) {
+		log.error("print kinds = ", kind)
 	})
 }
 
@@ -65,8 +52,8 @@ put_on_shoes :: proc(query: ^ecs.Query) {
 	})
 }
 
-print_kinds :: proc(query: ^ecs.Query) {
-	ecs.handle_query(query, Kind, proc(kind: Kind) {
-		log.error("print kinds = ", kind)
+hello_kind_and_name :: proc(query: ^ecs.Query) {
+	ecs.handle_query(query, Kind, Name, proc(kind: Kind, name: Name) {
+		log.error("hello_username", kind, name)
 	})
 }

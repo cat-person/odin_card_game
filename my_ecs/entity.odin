@@ -4,7 +4,7 @@ EntityId :: distinct u16
 
 Entity :: struct {
     id: EntityId,
-    components: map[typeid][]byte
+    components: map[u64][]byte
 }
 
 calc_entity_id :: proc(world: ^World) -> EntityId {
