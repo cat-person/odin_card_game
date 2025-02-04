@@ -3,7 +3,7 @@ package my_ecs
 import "core:log"
 
 Query :: struct {
-    data_type: typeid,
+    data_type: ComponentKey,
     data: []byte,
 }
 
@@ -18,7 +18,7 @@ handle_query :: proc{
 }
 
 add_system1 :: proc(world: ^World, data_type: typeid, system: proc(^Query)) {
-    world.systems[transmute(u64)data_type] = system
+    world.systems[data_type] = system
 }
 
 handle_query1 :: proc(query: ^Query, $T: typeid, logic: proc(T)) {
@@ -35,8 +35,7 @@ handle_query1 :: proc(query: ^Query, $T: typeid, logic: proc(T)) {
 
 add_system2 :: proc(world: ^World, data_type1, data_type2: typeid, system: proc(^Query)) {
     log.error("typeid", )
-    meow := (transmute(u64)data_type1) ~ (transmute(u64)data_type2)
-    world.systems[meow] = system
+    world.systems[[?]typeid{data_type1, data_type2}] = system
 }
 
 handle_query2 :: proc(query: ^Query, $T1, $T2: typeid, logic: proc(T1, T2)) {
