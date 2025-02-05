@@ -18,22 +18,30 @@ main :: proc() {
 	ecs.add_entity(&world, Name("Octopus"), Kind("Octocat"), PawCount(8))
 	ecs.add_entity(&world, Name("George"), Kind("Human"), PawCount(2))
 
+
 	ecs.add_system(&world, PawCount, put_on_shoes)
 	ecs.add_system(&world, Kind, print_kinds)
 	ecs.add_system(&world, Name, hello_username)
 	ecs.add_system(&world, Kind, Name, hello_kind_and_name)
-
+	ecs.add_system(&world, Name, rename)
 	ecs.update_world(&world)
+
+	ecs.add_event_handler(&world, ChangeName, change_name_handler)
 }
 
 Name :: distinct string
 Kind :: distinct string
 PawCount :: distinct u8
 
-
 hello_username :: proc(name_query: ^ecs.Query) {
 	ecs.handle_query(name_query, Name, proc(name: Name) {
 		log.error("hello", name)
+	})
+}
+
+rename :: proc(name_query: ^ecs.Query) {
+	ecs.handle_query(name_query, Name, proc(name: Name) {
+		log.error("rename", name)
 	})
 }
 
@@ -54,6 +62,17 @@ put_on_shoes :: proc(query: ^ecs.Query) {
 
 hello_kind_and_name :: proc(query: ^ecs.Query) {
 	ecs.handle_query(query, Kind, Name, proc(kind: Kind, name: Name) {
-		log.error("hello_username", kind, name)
+		log.error("hello kind/name", kind, name)
 	})
+}
+
+change_name_handler :: proc(entity_id: ecs.EntityId, events: []any) {
+	for event in events {
+		change_name := transmute(ChangeName)event
+		log.error("hello_username", change_name)
+	}
+}
+
+ChangeName :: struct {
+	new_name: string
 }
