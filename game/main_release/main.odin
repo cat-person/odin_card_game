@@ -33,25 +33,26 @@ Name :: distinct string
 Kind :: distinct string
 PawCount :: distinct u8
 
-hello_username :: proc(name_query: ^ecs.Query) {
+hello_username :: proc(world: ^ecs.World, name_query: ^ecs.Query) {
 	ecs.handle_query(name_query, Name, proc(name: Name) {
 		log.error("hello", name)
 	})
 }
 
-rename :: proc(name_query: ^ecs.Query) {
+rename :: proc(world: ^ecs.World, name_query: ^ecs.Query) {
 	ecs.handle_query(name_query, Name, proc(name: Name) {
 		log.error("rename", name)
+
 	})
 }
 
-print_kinds :: proc(query: ^ecs.Query) {
+print_kinds :: proc(world: ^ecs.World, query: ^ecs.Query) {
 	ecs.handle_query(query, Kind, proc(kind: Kind) {
 		log.error("print kinds = ", kind)
 	})
 }
 
-put_on_shoes :: proc(query: ^ecs.Query) {
+put_on_shoes :: proc(world: ^ecs.World, query: ^ecs.Query) {
 	ecs.handle_query(query, PawCount, proc(paw_count: PawCount) {
 		log.error("put_on_shoes paw_count = ", paw_count)
 		for paw_idx in 0..<paw_count {
@@ -60,13 +61,13 @@ put_on_shoes :: proc(query: ^ecs.Query) {
 	})
 }
 
-hello_kind_and_name :: proc(query: ^ecs.Query) {
+hello_kind_and_name :: proc(world: ^ecs.World, query: ^ecs.Query) {
 	ecs.handle_query(query, Kind, Name, proc(kind: Kind, name: Name) {
 		log.error("hello kind/name", kind, name)
 	})
 }
 
-change_name_handler :: proc(entity_id: ecs.EntityId, events: []any) {
+change_name_handler :: proc(world: ^ecs.World, entity_id: ecs.EntityId, events: []any) {
 	for event in events {
 		change_name := transmute(ChangeName)event
 		log.error("hello_username", change_name)

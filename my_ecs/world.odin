@@ -10,9 +10,9 @@ World :: struct {
     entities: map[EntityId]Entity,
 
     components: map[ComponentKey]Query,
-    systems: map[ComponentKey][dynamic]proc(^Query),
+    systems: map[ComponentKey][dynamic]proc(^World, ^Query),
     events: map[EntityId][dynamic]any,
-    event_handlers: map[typeid]proc(EntityId, []any),
+    event_handlers: map[typeid]proc(^World, EntityId, []any),
 }
 
 create_world :: proc(/*mem allocator*/) -> World {
@@ -45,14 +45,14 @@ add_event :: proc(world: ^World, entity_id: EntityId, event: any) {
     }
 }
 
-add_event_handler :: proc(world: ^World, $TEvent: typeid, event_handler: proc (entity_id: EntityId, events: []any)) {
+add_event_handler :: proc(world: ^World, $TEvent: typeid, event_handler: proc (world: ^World, entity_id: EntityId, events: []any)) {
     world.event_handlers[TEvent] = event_handler
 }
 
 handle_events :: proc(world: ^World) {
-    for renemae_me_event_id, event_handler in world.event_handlers {
+    for rename_me_event_id, event_handler in world.event_handlers {
         for event_id, event_list in world.events {
-            event_handler(event_id, event_list[:])
+            event_handler(world, event_id, event_list[:])
         }
     }
 }
@@ -64,7 +64,7 @@ update_world ::proc(world: ^World) {
         if(data_type in components) {
             query := components[data_type]
             for system in world.systems[data_type] {
-                system(&query)
+                system(world, &query)
             }
         }
     }

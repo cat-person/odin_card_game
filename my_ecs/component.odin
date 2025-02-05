@@ -11,7 +11,7 @@ ComponentKey :: union {
     [6]typeid,
 }
 
-denormilise_entities :: proc(entities: ^map[EntityId]Entity, systems: map[ComponentKey][dynamic]proc(^Query)) -> map[ComponentKey]Query {
+denormilise_entities :: proc(entities: ^map[EntityId]Entity, systems: map[ComponentKey][dynamic]proc(^World, ^Query)) -> map[ComponentKey]Query {
     queries := map[ComponentKey]Query {}
 
     for component_key in systems {

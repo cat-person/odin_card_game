@@ -17,9 +17,9 @@ handle_query :: proc{
     handle_query2
 }
 
-add_system1 :: proc(world: ^World, data_type: typeid, system: proc(^Query)) {
+add_system1 :: proc(world: ^World, data_type: typeid, system: proc(^World, ^Query)) {
     if len(world.systems[data_type]) == 0 {
-        world.systems[data_type] = [dynamic]proc(^Query){ system }
+        world.systems[data_type] = [dynamic]proc(^World, ^Query){ system }
     } else {
         append(&world.systems[data_type], system)
     }
@@ -37,11 +37,11 @@ handle_query1 :: proc(query: ^Query, $T: typeid, logic: proc(T)) {
     }
 }
 
-add_system2 :: proc(world: ^World, data_type1, data_type2: typeid, system: proc(^Query)) {
+add_system2 :: proc(world: ^World, data_type1, data_type2: typeid, system: proc(^World,     ^Query)) {
 
     composite_type := [?]typeid{data_type1, data_type2}
     if len(world.systems[composite_type]) == 0 {
-        world.systems[composite_type] = [dynamic]proc(^Query){ system }
+        world.systems[composite_type] = [dynamic]proc(^World, ^Query){ system }
     } else {
         append(&world.systems[composite_type], system)
     }
