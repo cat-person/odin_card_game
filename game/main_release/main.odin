@@ -19,13 +19,13 @@ main :: proc() {
 	ecs.add_entity(&world, Name("George"), Kind("Human"), PawCount(2))
 
 
-	ecs.add_system(&world, Name, hello_username)
+//	ecs.add_system(&world, Name, hello_username)
 //	ecs.add_system(&world, PawCount, put_on_shoes)
 //	ecs.add_system(&world, Kind, print_kinds)
 //	ecs.add_system(&world, Kind, Name, hello_kind_and_name)
-//	ecs.add_system(&world, Name, rename)
+	ecs.add_system(&world, Name, rename)
 
-	ecs.add_event_handler(&world, ChangeName, change_name_handler)
+	ecs.add_event_handler(&world, Rename, change_name_handler)
 
 	ecs.update_world(&world)
 }
@@ -34,25 +34,25 @@ Name :: distinct string
 Kind :: distinct string
 PawCount :: distinct u8
 
-hello_username :: proc(query: ^ecs.Query) -> map[ecs.EventKey][dynamic]any {
-	return ecs.handle_query(query, Name, proc(entity_id: ecs.EntityId, name: Name) -> map[ecs.EventKey][dynamic]any {
-		log.error("hello", name)
-		return make(map[ecs.EventKey][dynamic]any)
+//hello_username :: proc(query: ^ecs.Query) -> ecs.EventMap {
+//	return ecs.handle_query(query, Name, proc(entity_id: ecs.EntityId, name: Name) -> ecs.Events {
+//		log.error("hello", name)
+//		return nil
+//	})
+//}
+
+rename :: proc(query: ^ecs.Query) -> ecs.EventMap {
+	return ecs.handle_query(query, Name, proc(entity_id: ecs.EntityId, name: Name) -> any {
+		log.error("rename", name)
+		if(name == "Octopus") {
+			log.error("Octopus renamed to Pupus")
+			return Rename { new_name = 42 } // <==== The hell
+		}
+		log.error("rename Exit", name)
+		return nil
 	})
 }
 
-//rename :: proc(world: ^ecs.World, query: ^ecs.Query) -> map[EventKey][dynamic]any {
-//	ecs.handle_query(world, query, Name, proc(world: ^ecs.World, entity_id: ecs.EntityId, name: Name) {
-//		log.error("rename", name)
-//		if(name == "Octopus") {
-//			log.error("Octopus renamed to Pupus")
-//			ecs.add_event(world, entity_id, ChangeName {
-//				new_name = "Pupus"
-//			})
-//		}
-//	})
-//}
-//
 //print_kinds :: proc(world: ^ecs.World, query: ^ecs.Query) -> map[EventKey][dynamic]any {
 //	ecs.handle_query(world, query, Kind, proc(world: ^ecs.World, entity_id: ecs.EntityId, kind: Kind) {
 //		log.error("print kinds = ", kind)
@@ -74,13 +74,13 @@ hello_username :: proc(query: ^ecs.Query) -> map[ecs.EventKey][dynamic]any {
 //	})
 //}
 //
-change_name_handler :: proc(world: ^ecs.World, entity_id: ecs.EntityId, events: []any) {
-	for event in events {
-		change_name := transmute(ChangeName)event
-		log.error("Change name event handled renamed ", world.entities[entity_id].components[Name], change_name)
-	}
+change_name_handler :: proc(world: ^ecs.World, entity_id: ecs.EntityId, event: any) {
+//		change_name := transmute(Rename)event.dat
+		log.error("Change name event handled renamed ", world.entities[entity_id].components[Name], event)
+//		world.entities[entity_id].components[Name]
+		// = Name(change_name.new_name)
 }
 
-ChangeName :: struct {
-	new_name: string
+Rename :: struct {
+	new_name: u16
 }

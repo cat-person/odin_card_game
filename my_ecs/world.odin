@@ -8,10 +8,9 @@ import "core:mem"
 
 World :: struct {
     entities: map[EntityId]Entity,
-
     components: map[ComponentKey]Query,
-    systems: map[ComponentKey][dynamic]proc(^Query) -> map[EventKey][dynamic]any,
-    event_handlers: map[typeid]proc(^World, EntityId, []any),
+    systems: map[ComponentKey][dynamic]proc(^Query) -> EventMap,
+    event_handlers: map[typeid]proc(^World, EntityId, any),
 }
 
 create_world :: proc(/*mem allocator*/) -> World {
@@ -36,50 +35,63 @@ add_entity :: proc (world: ^World, components: ..any) -> EntityId {
     return entity_id
 }
 
-add_event :: proc(events: ^map[EventKey][dynamic]any, entity_id: EntityId, event: any) {
+add_event :: proc(event_map: ^map[EventKey]any, entity_id: EntityId, event: any) {
+    if(event == nil) {
+        return
+    }
+
+    log.error("add_event", event)
 
     event_key := EventKey {
         entity_id = entity_id,
         event_type = event.id
     }
 
-    if event_key in events {
-        append(&events[event_key], event)
-    } else {
-        events[event_key] = [dynamic]any{ event }
-    }
+    log.error("add_event event_map:", event_map)
+    event_map[event_key] = event
+    log.error("add_event event_map:", event_map)
 }
 
-add_event_handler :: proc(world: ^World, $TEvent: typeid, event_handler: proc (world: ^World, entity_id: EntityId, events: []any)) {
+add_event_handler :: proc(world: ^World, $TEvent: typeid, event_handler: proc (world: ^World, entity_id: EntityId, event: any)) {
     world.event_handlers[TEvent] = event_handler
 }
 
-handle_events :: proc(world: ^World, events: ^map[EventKey][dynamic]any) {
-    for rename_me_event_id, event_handler in world.event_handlers {
-        for event_id, event_list in events {
-//            event_handler(world, event_id, event_list[:])
+handle_events :: proc(world: ^World, event_map: EventMap) {
+    log.error("handle_events", event_map)
+    //for event_type_id, event_handler in world.event_handlers {
+    for event_id, event in event_map {
+        if event_id.event_type in world.event_handlers {
+            world.event_handlers[event_id.event_type](world, event_id.entity_id, event)
         }
     }
+
 }
 
 update_world ::proc(world: ^World) {
     components := denormilise_entities(&world.entities, world.systems)
 
-    events := map[EventKey][dynamic]any {}
+    all_events := make(EventMap)
 
     for data_type in world.systems {
         if(data_type in components) {
             query := components[data_type]
             for system in world.systems[data_type] {
-                system(&query)
+                event_map := system(&query)
+                log.error("update_world Events:", event_map)
+                if(event_map != nil) {
+                    for event_id, event in event_map {
+                        all_events[event_id] = event
+                    }
+                }
             }
         }
     } // <== Add event goes here
-
-    handle_events(world, &events)
+    handle_events(world, all_events)
 }
 
 EventKey :: struct {
     entity_id: EntityId,
     event_type: typeid
 }
+
+EventMap :: map[EventKey]any
