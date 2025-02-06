@@ -11,7 +11,7 @@ ComponentKey :: union {
     [6]typeid,
 }
 
-denormilise_entities :: proc(entities: ^map[EntityId]Entity, systems: map[ComponentKey][dynamic]proc(^World, ^Query)) -> map[ComponentKey]Query {
+denormilise_entities :: proc(entities: ^map[EntityId]Entity, systems: map[ComponentKey][dynamic]proc(^Query) -> map[EventKey][dynamic]any) -> map[ComponentKey]Query {
     queries := map[ComponentKey]Query {}
 
     for component_key in systems {
@@ -37,7 +37,6 @@ denormilise_entities :: proc(entities: ^map[EntityId]Entity, systems: map[Compon
 }
 
 extract_query_single :: proc(entities: ^map[EntityId]Entity, single_key: typeid) -> Query {
-//    entity_data := make([dynamic]byte, 0, 16)
     result := make(map[EntityId][]byte)
 
     log.error("created single parameter query", single_key)

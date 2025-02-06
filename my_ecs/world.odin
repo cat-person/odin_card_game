@@ -10,8 +10,7 @@ World :: struct {
     entities: map[EntityId]Entity,
 
     components: map[ComponentKey]Query,
-    systems: map[ComponentKey][dynamic]proc(^World, ^Query),
-    events: map[EntityId][dynamic]any,
+    systems: map[ComponentKey][dynamic]proc(^Query) -> map[EventKey][dynamic]any,
     event_handlers: map[typeid]proc(^World, EntityId, []any),
 }
 
@@ -37,11 +36,17 @@ add_entity :: proc (world: ^World, components: ..any) -> EntityId {
     return entity_id
 }
 
-add_event :: proc(world: ^World, entity_id: EntityId, event: any) {
-    if entity_id in world.events {
-        append(&world.events[entity_id], event)
+add_event :: proc(events: ^map[EventKey][dynamic]any, entity_id: EntityId, event: any) {
+
+    event_key := EventKey {
+        entity_id = entity_id,
+        event_type = event.id
+    }
+
+    if event_key in events {
+        append(&events[event_key], event)
     } else {
-        world.events[entity_id] = [dynamic]any{ event }
+        events[event_key] = [dynamic]any{ event }
     }
 }
 
@@ -49,10 +54,10 @@ add_event_handler :: proc(world: ^World, $TEvent: typeid, event_handler: proc (w
     world.event_handlers[TEvent] = event_handler
 }
 
-handle_events :: proc(world: ^World) {
+handle_events :: proc(world: ^World, events: ^map[EventKey][dynamic]any) {
     for rename_me_event_id, event_handler in world.event_handlers {
-        for event_id, event_list in world.events {
-            event_handler(world, event_id, event_list[:])
+        for event_id, event_list in events {
+//            event_handler(world, event_id, event_list[:])
         }
     }
 }
@@ -60,12 +65,21 @@ handle_events :: proc(world: ^World) {
 update_world ::proc(world: ^World) {
     components := denormilise_entities(&world.entities, world.systems)
 
+    events := map[EventKey][dynamic]any {}
+
     for data_type in world.systems {
         if(data_type in components) {
             query := components[data_type]
             for system in world.systems[data_type] {
-                system(world, &query)
+                system(&query)
             }
         }
-    }
+    } // <== Add event goes here
+
+    handle_events(world, &events)
+}
+
+EventKey :: struct {
+    entity_id: EntityId,
+    event_type: typeid
 }
