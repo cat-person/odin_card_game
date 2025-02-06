@@ -69,7 +69,3 @@ update_world ::proc(world: ^World) {
         }
     }
 }
-
-EventKey :: struct {
-    typeid
-}

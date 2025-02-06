@@ -33,27 +33,27 @@ Name :: distinct string
 Kind :: distinct string
 PawCount :: distinct u8
 
-hello_username :: proc(world: ^ecs.World, name_query: ^ecs.Query) {
-	ecs.handle_query(name_query, Name, proc(name: Name) {
+hello_username :: proc(world: ^ecs.World, query: ^ecs.Query) {
+	ecs.handle_query(world, query, Name, proc(world: ^ecs.World, entity_id: ecs.EntityId, name: Name) {
 		log.error("hello", name)
 	})
 }
 
-rename :: proc(world: ^ecs.World, name_query: ^ecs.Query) {
-	ecs.handle_query(name_query, Name, proc(name: Name) {
+rename :: proc(world: ^ecs.World, query: ^ecs.Query) {
+	ecs.handle_query(world, query, Name, proc(world: ^ecs.World, entity_id: ecs.EntityId, name: Name) {
 		log.error("rename", name)
-
+//		add_event
 	})
 }
 
 print_kinds :: proc(world: ^ecs.World, query: ^ecs.Query) {
-	ecs.handle_query(query, Kind, proc(kind: Kind) {
+	ecs.handle_query(world, query, Kind, proc(world: ^ecs.World, entity_id: ecs.EntityId, kind: Kind) {
 		log.error("print kinds = ", kind)
 	})
 }
 
 put_on_shoes :: proc(world: ^ecs.World, query: ^ecs.Query) {
-	ecs.handle_query(query, PawCount, proc(paw_count: PawCount) {
+	ecs.handle_query(world, query, PawCount, proc(world: ^ecs.World, entity_id: ecs.EntityId, paw_count: PawCount) {
 		log.error("put_on_shoes paw_count = ", paw_count)
 		for paw_idx in 0..<paw_count {
 			//log.error("put_on_shoe on the paw #", paw_idx + 1)
@@ -62,7 +62,7 @@ put_on_shoes :: proc(world: ^ecs.World, query: ^ecs.Query) {
 }
 
 hello_kind_and_name :: proc(world: ^ecs.World, query: ^ecs.Query) {
-	ecs.handle_query(query, Kind, Name, proc(kind: Kind, name: Name) {
+	ecs.handle_query(world, query, Kind, Name, proc(world: ^ecs.World, entity_id: ecs.EntityId, kind: Kind, name: Name) {
 		log.error("hello kind/name", kind, name)
 	})
 }
