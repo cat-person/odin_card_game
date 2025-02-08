@@ -11,7 +11,7 @@ World :: struct {
 
     components: map[ComponentKey]Query,
     systems: map[ComponentKey][dynamic]proc(^World, ^Query),
-    events: map[EntityId][dynamic]any,
+    events: map[EventId][dynamic]any,
     event_handlers: map[typeid]proc(^World, EntityId, []any),
 }
 
@@ -38,10 +38,15 @@ add_entity :: proc (world: ^World, components: ..any) -> EntityId {
 }
 
 add_event :: proc(world: ^World, entity_id: EntityId, event: any) {
-    if entity_id in world.events {
-        append(&world.events[entity_id], event)
+    event_id := EventId {
+        entity_id = entity_id,
+        evnet_type = event.id
+    }
+
+    if event_id in world.events {
+//        append(&world.events[entity_id], event)
     } else {
-        world.events[entity_id] = [dynamic]any{ event }
+        world.events[event_id] = [dynamic]any{  }
     }
 }
 
@@ -52,7 +57,7 @@ add_event_handler :: proc(world: ^World, $TEvent: typeid, event_handler: proc (w
 handle_events :: proc(world: ^World) {
     for rename_me_event_id, event_handler in world.event_handlers {
         for event_id, event_list in world.events {
-            event_handler(world, event_id, event_list[:])
+            event_handler(world, event_id.entity_id, event_list[:])
         }
     }
 }
@@ -68,4 +73,9 @@ update_world ::proc(world: ^World) {
             }
         }
     }
+}
+
+EventId :: struct {
+    entity_id: EntityId,
+    evnet_type: typeid
 }

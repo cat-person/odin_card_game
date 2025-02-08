@@ -1,6 +1,7 @@
 package my_ecs
 
 import "core:log"
+import "core:reflect"
 
 ComponentKey :: union {
     typeid,
@@ -15,7 +16,7 @@ denormilise_entities :: proc(entities: ^map[EntityId]Entity, systems: map[Compon
     queries := map[ComponentKey]Query {}
 
     for component_key in systems {
-        entity_data := make([dynamic]byte, 0, 16)
+//        entity_data := make([dynamic]byte, 0, 16)
 
         switch type in component_key {
         case typeid:  {
@@ -36,26 +37,25 @@ denormilise_entities :: proc(entities: ^map[EntityId]Entity, systems: map[Compon
     return queries
 }
 
-extract_query_single :: proc(entities: ^map[EntityId]Entity, single_key: typeid) -> Query {
-//    entity_data := make([dynamic]byte, 0, 16)
-    result := make(map[EntityId][]byte)
-
-    log.error("created single parameter query", single_key)
+extract_query_single :: proc(entities: ^map[EntityId]Entity, data_type: typeid) -> Query {
+    result := make(Query)
 
     for entity_id, entity in entities {
-        for component_id, component_data in entity.components {
-            if(component_id == single_key) {
-                result[entity_id] = component_data
+        if(data_type in entity.components) {
+            query_data := make([dynamic]byte)
+            component_data := entity.components[data_type]
+            for data_byte_idx in 0..<len(component_data) {
+                append(&query_data, component_data[data_byte_idx])
             }
+            result[entity_id] = query_data
         }
     }
     return result
 }
 
 extract_query_multiple :: proc(entities: ^map[EntityId]Entity, multiple_key: [2]typeid) -> Query {
-    log.error("created multi parameter query", multiple_key)
-    result := make(map[EntityId][]byte)
-    entity_data := make([dynamic]byte, 0, 16)
+    result := make(Query)
+
     for entity_id, entity in entities {
         contains_all_components := true
         for data_type in multiple_key {
@@ -67,13 +67,18 @@ extract_query_multiple :: proc(entities: ^map[EntityId]Entity, multiple_key: [2]
             }
         }
         if(contains_all_components) {
-            for data_type in multiple_key {
-                append(&entity_data, ..entity.components[data_type])
+            query_data := make([dynamic]byte)
 
+            for data_type in multiple_key {
+                data_size := reflect.type_info_base(type_info_of(data_type)).size
+                component_data := entity.components[data_type]
+                for data_byte_idx in 0..<data_size {
+                    append(&query_data, component_data[data_byte_idx])
+                }
             }
-            result[entity_id] = entity_data[:]
+
+            result[entity_id] = query_data
         }
     }
-
     return result
 }
