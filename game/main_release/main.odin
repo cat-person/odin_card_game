@@ -24,9 +24,10 @@ main :: proc() {
 	ecs.add_system(&world, Name, hello_username)
 	ecs.add_system(&world, Kind, Name, hello_kind_and_name)
 	ecs.add_system(&world, Name, rename)
-	ecs.update_world(&world)
 
 	ecs.add_event_handler(&world, ChangeName, change_name_handler)
+
+	ecs.update_world(&world)
 }
 
 Name :: distinct string
@@ -69,10 +70,10 @@ hello_kind_and_name :: proc(world: ^ecs.World, query: ^ecs.Query) {
 }
 
 change_name_handler :: proc(world: ^ecs.World, entity_id: ecs.EntityId, events: []any) {
-	for event in events {
-		change_name := transmute(ChangeName)event
-		log.error("change_name_handler", change_name)
-	}
+//	for event in events {
+//		change_name := transmute(ChangeName)event
+		log.error("change_name_handler")
+//	}
 }
 
 ChangeName :: struct {

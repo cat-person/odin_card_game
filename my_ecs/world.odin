@@ -43,11 +43,10 @@ add_event :: proc(world: ^World, entity_id: EntityId, event: any) {
         evnet_type = event.id
     }
 
-    if event_id in world.events {
-//        append(&world.events[entity_id], event)
-    } else {
+    if !(event_id in world.events) {
         world.events[event_id] = [dynamic]any{  }
     }
+    append(&world.events[event_id], event)
 }
 
 add_event_handler :: proc(world: ^World, $TEvent: typeid, event_handler: proc (world: ^World, entity_id: EntityId, events: []any)) {
@@ -55,11 +54,16 @@ add_event_handler :: proc(world: ^World, $TEvent: typeid, event_handler: proc (w
 }
 
 handle_events :: proc(world: ^World) {
+    log.error("handle_events world", world)
     for rename_me_event_id, event_handler in world.event_handlers {
+        log.error("handle_events event_handler", event_handler)
         for event_id, event_list in world.events {
+            log.error("handle_events event_id", event_id)
             event_handler(world, event_id.entity_id, event_list[:])
         }
     }
+
+    delete(world.events)
 }
 
 update_world ::proc(world: ^World) {
@@ -73,6 +77,8 @@ update_world ::proc(world: ^World) {
             }
         }
     }
+
+    handle_events(world)
 }
 
 EventId :: struct {
