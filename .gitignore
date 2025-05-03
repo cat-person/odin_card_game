@@ -1,13 +1,1 @@
-*.exe
-*.sublime-workspace
-*.pdb
-*.raddbgi
-*.dll
-*.exp
-*.lib
-log.txt
-*.bin
-*.dylib
-*.so
-*.dSYM
-linux
+/bin/*
