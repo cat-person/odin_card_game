@@ -1,3 +1,4 @@
+#+feature dynamic-literals
 package my_ecs
 
 import "core:fmt"
