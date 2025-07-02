@@ -1,4 +1,3 @@
-#+feature dynamic-literals
 package my_ecs
 
 import "core:bytes"
@@ -15,31 +14,16 @@ World :: struct {
 	mutation_handlers: map[typeid]proc(_: ^World, _: EntityId, _: []any),
 }
 
-ComponentKey :: union {
-	typeid,
-	[2]typeid,
+
+EventId :: struct {
+	entity_id:  EntityId,
+	evnet_type: typeid,
 }
 
 create_world :: proc() -> World {
 	return World{}
 }
 
-add_entity :: proc(world: ^World, components: ..any) -> EntityId {
-	component_map := map[typeid][]byte{}
-	for component in components {
-		component_size := reflect.type_info_base(type_info_of(component.id)).size
-		component_bytes := make([]byte, component_size)
-		mem.copy(raw_data(component_bytes), component.data, component_size)
-		component_map[component.id] = component_bytes
-	}
-
-	entity_id := calc_entity_id(world)
-	world.entities[entity_id] = Entity {
-		id         = entity_id,
-		components = component_map,
-	}
-	return entity_id
-}
 
 add_event_handler :: proc(
 	world: ^World,
@@ -63,14 +47,11 @@ handle_events :: proc(world: ^World) {
 }
 
 update_world :: proc(world: ^World) {
-	components := denormilise_entities(&world.entities, world.systems)
-
-	// for event_key in events {
-	// 	log.error("update_world event_key", event_key)
-	// }
-}
-
-EventId :: struct {
-	entity_id:  EntityId,
-	evnet_type: typeid,
+	log.info("Update world")
+	for system_collection_key in world.systems {
+		log.info("Runing systems by key", system_collection_key)
+		for system in world.systems[system_collection_key] {
+			log.info("Run system", system)
+		}
+	}
 }

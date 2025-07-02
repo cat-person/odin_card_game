@@ -1,13 +1,19 @@
 #+feature dynamic-literals
 package my_ecs
 
-add_system1 :: proc(world: ^World, data_type: typeid, system: proc(_: ^World, _: ^Query)) {
+import "core:bytes"
+import "core:fmt"
+import "core:log"
+import "core:mem"
+import "core:reflect"
 
-	if len(world.systems[data_type]) == 0 {
-		world.systems[data_type] = [dynamic]proc(_: ^World, _: ^Query){ system }
-	} else {
-		append(&world.systems[data_type], system)
-	}
+add_system1 :: proc(world: ^World, data_type: typeid, system: proc(_: ^World, _: ^Query)) {
+	// if len(world.systems[data_type]) == 0 {
+	// 	world.systems[data_type] = [dynamic]proc(_: ^World, _: ^Query){ system }
+	// } else {
+	// 	append(&world.systems[data_type], system)
+	// }
+	log.info("add_system1")
 }
 
 handle_query1 :: proc(
@@ -30,12 +36,20 @@ add_system2 :: proc(
 	data_type1, data_type2: typeid,
 	system: proc(_: ^World, _: ^Query),
 ) {
-	composite_type := [?]typeid{data_type1, data_type2}
+	composite_type := create_component_key(data_type1, data_type2)
 	if len(world.systems[composite_type]) == 0 {
+		log.info(
+			"New collection of systems with the key {",
+			composite_type,
+			"} was added for system",
+			system,
+		)
 		world.systems[composite_type] = [dynamic]proc(_: ^World, _: ^Query){system}
 	} else {
+		log.info("System", system, "was added to collection with the key {", composite_type, "}")
 		append(&world.systems[composite_type], system)
 	}
+	log.info("System {", system, "} was added current system count is ", len(world.systems))
 }
 
 handle_query2 :: proc(

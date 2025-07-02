@@ -15,15 +15,12 @@ main :: proc() {
 	world := ecs.create_world()
 
 	ecs.add_entity(&world, Name("Lucky"), Kind("Gato"), PawCount(4))
-	// ecs.add_entity(&world, Name("Octopus"), Kind("Octocat"), PawCount(8))
-	// ecs.add_entity(&world, Name("George"), Kind("Human"), PawCount(2))
-	// ecs.add_entity(&world, Kind("Human"), PawCount(2))
+	ecs.add_entity(&world, Name("Octopus"), Kind("Octocat"), PawCount(8))
+	ecs.add_entity(&world, Name("George"), Kind("Human"), PawCount(2))
+	ecs.add_entity(&world, Kind("Human"), PawCount(2))
 
-	// ecs.add_system(&world, PawCount, put_on_shoes)
-	// ecs.add_system(&world, Kind, print_kinds)
-	// ecs.add_system(&world, Name, hello_username)
 	ecs.add_system(&world, Kind, Name, hello_kind_and_name)
-	// ecs.add_system(&world, Name, rename)
+	ecs.add_system(&world, Name, Kind, hello_name_and_kind)
 
 	ecs.add_event_handler(&world, ChangeName, change_name_handler)
 
@@ -90,6 +87,18 @@ hello_kind_and_name :: proc(world: ^ecs.World, query: ^ecs.Query) {
 		Kind,
 		Name,
 		proc(world: ^ecs.World, entity_id: ecs.EntityId, kind: Kind, name: Name) {
+			log.error("hello kind/name", kind, name)
+		},
+	)
+}
+
+hello_name_and_kind :: proc(world: ^ecs.World, query: ^ecs.Query) {
+	ecs.handle_query(
+		world,
+		query,
+		Name,
+		Kind,
+		proc(world: ^ecs.World, entity_id: ecs.EntityId, name: Name, kind: Kind) {
 			log.error("hello kind/name", kind, name)
 		},
 	)

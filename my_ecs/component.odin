@@ -2,6 +2,7 @@ package my_ecs
 
 import "core:log"
 import "core:reflect"
+import "core:slice"
 
 denormilise_entities :: proc(
 	entities: ^map[EntityId]Entity,
@@ -31,9 +32,9 @@ extract_query_single :: proc(entities: ^map[EntityId]Entity, data_type: typeid) 
 		if (data_type in entity.components) {
 			query_data := make([dynamic]byte)
 			component_data := entity.components[data_type]
-			for data_byte_idx in 0 ..< len(component_data) {
-				append(&query_data, component_data[data_byte_idx])
-			}
+			// for data_byte_idx in 0 ..< len(component_data) {
+			// 	append(&query_data, component_data[data_byte_idx])
+			// }
 			result[entity_id] = query_data
 		}
 	}
@@ -60,7 +61,7 @@ extract_query_multiple :: proc(entities: ^map[EntityId]Entity, multiple_key: [2]
 				data_size := reflect.type_info_base(type_info_of(data_type)).size
 				component_data := entity.components[data_type]
 				for data_byte_idx in 0 ..< data_size {
-					append(&query_data, component_data[data_byte_idx])
+					// append(&query_data, component_data[data_byte_idx])
 				}
 			}
 
@@ -68,4 +69,27 @@ extract_query_multiple :: proc(entities: ^map[EntityId]Entity, multiple_key: [2]
 		}
 	}
 	return result
+}
+
+ComponentKey :: union {
+	typeid,
+	[2]typeid,
+}
+
+
+create_component_key :: proc {
+	create_component_key_1,
+	create_component_key_2,
+}
+
+create_component_key_1 :: proc(id: typeid) -> ComponentKey {
+	return ComponentKey(id)
+}
+
+create_component_key_2 :: proc(first: typeid, second: typeid) -> ComponentKey {
+	if transmute(u64)(first) < transmute(u64)(second) {
+		return ComponentKey([2]typeid{first, second})
+	} else {
+		return ComponentKey([2]typeid{second, first})
+	}
 }
