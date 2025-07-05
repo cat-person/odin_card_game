@@ -19,8 +19,8 @@ construct_query :: proc(world: ^World) -> Query {
 			break
 		}
 		result = Query{}
-		for entity_key in world.entities {
-			result[entity_key] = [dynamic]byte{} // world.entities[entity_key])
+		for entity_key, entity in world.entities {
+			result[entity_key] = pack_to_bytes(entity.components) // world.entities[entity_key])
 		}
 
 		log.info("Constructed query for key:", key, "with the result", result)
