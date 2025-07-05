@@ -8,8 +8,8 @@ import "core:reflect"
 
 World :: struct {
 	entities:          map[EntityId]Entity,
-	components:        map[ComponentKey]Query,
-	systems:           map[ComponentKey][dynamic]proc(_: ^World, _: ^Query), // map event type to
+	components:        map[SystemKey]Query,
+	systems:           map[SystemKey][dynamic]proc(_: ^World, _: ^Query), // map event type to
 	event_handlers:    map[typeid]proc(_: ^World, _: EntityId, _: []any),
 	mutation_handlers: map[typeid]proc(_: ^World, _: EntityId, _: []any),
 }
@@ -51,7 +51,8 @@ update_world :: proc(world: ^World) {
 	for system_collection_key in world.systems {
 		log.info("Runing systems by key", system_collection_key)
 		for system in world.systems[system_collection_key] {
-			log.info("Run system", system)
+			query := construct_query(world)
+			log.info("Run system", system, "on query", query)
 		}
 	}
 }

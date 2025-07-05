@@ -6,9 +6,9 @@ import "core:slice"
 
 denormilise_entities :: proc(
 	entities: ^map[EntityId]Entity,
-	systems: map[ComponentKey][dynamic]proc(_: ^World, _: ^Query),
-) -> map[ComponentKey]Query {
-	queries := map[ComponentKey]Query{}
+	systems: map[SystemKey][dynamic]proc(_: ^World, _: ^Query),
+) -> map[SystemKey]Query {
+	queries := map[SystemKey]Query{}
 
 	for component_key in systems {
 		switch type in component_key {
@@ -71,7 +71,7 @@ extract_query_multiple :: proc(entities: ^map[EntityId]Entity, multiple_key: [2]
 	return result
 }
 
-ComponentKey :: union {
+SystemKey :: union {
 	typeid,
 	[2]typeid,
 }
@@ -82,14 +82,14 @@ create_component_key :: proc {
 	create_component_key_2,
 }
 
-create_component_key_1 :: proc(id: typeid) -> ComponentKey {
-	return ComponentKey(id)
+create_component_key_1 :: proc(id: typeid) -> SystemKey {
+	return SystemKey(id)
 }
 
-create_component_key_2 :: proc(first: typeid, second: typeid) -> ComponentKey {
+create_component_key_2 :: proc(first: typeid, second: typeid) -> SystemKey {
 	if transmute(u64)(first) < transmute(u64)(second) {
-		return ComponentKey([2]typeid{first, second})
+		return SystemKey([2]typeid{first, second})
 	} else {
-		return ComponentKey([2]typeid{second, first})
+		return SystemKey([2]typeid{second, first})
 	}
 }
