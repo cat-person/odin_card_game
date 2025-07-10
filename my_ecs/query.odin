@@ -13,14 +13,13 @@ handle_query :: proc {
 
 construct_query :: proc(world: ^World, key: SystemKey) -> Query {
 	result: Query
-	key: SystemKey
+	// key: SystemKey
 	if len(world.systems) > 0 {
-		for system_key in world.systems { 	// entries.first
-			key = system_key
-			break
-		}
+		// for system_key in world.systems { 	// entries.first
+		// 	key = system_key
+		// 	break
+		// }
 		result = Query{}
-
 
 		for entity_key, entity in world.entities {
 
