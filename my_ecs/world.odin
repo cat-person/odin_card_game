@@ -50,11 +50,14 @@ update_world :: proc(world: ^World) {
 	log.info("Update world")
 	for system_collection_key in world.systems {
 		log.info("Runing systems by key", system_collection_key)
-		query := construct_query(world)
+		query := construct_query(world, system_collection_key)
 		for system in world.systems[system_collection_key] {
-			for entity_key in query {
-				log.info("Run system", system, "on query", entity_key, ":", query[entity_key])
-			}
+
+
+			system(world, &query)
+			// for entity_key in query {
+			// 	log.info("Run system", system, "on query", entity_key, ":", query[entity_key])
+			// }
 		}
 	}
 }

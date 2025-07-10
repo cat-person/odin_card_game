@@ -2,6 +2,7 @@
 package my_ecs
 
 import "core:log"
+import "core:mem"
 
 Query :: map[EntityId][dynamic]byte // refactor dynamic
 
@@ -10,7 +11,7 @@ handle_query :: proc {
 	handle_query2,
 }
 
-construct_query :: proc(world: ^World) -> Query {
+construct_query :: proc(world: ^World, key: SystemKey) -> Query {
 	result: Query
 	key: SystemKey
 	if len(world.systems) > 0 {
@@ -19,8 +20,20 @@ construct_query :: proc(world: ^World) -> Query {
 			break
 		}
 		result = Query{}
+
 		for entity_key, entity in world.entities {
-			result[entity_key] = pack_to_bytes(entity.components) // world.entities[entity_key])
+			should_be_in_query, data := pack_to_bytes_two(entity.components, key) // world.entities[entity_key])
+			if (should_be_in_query) {
+				log.info(
+					"Put entity:",
+					entity_key,
+					"with components:",
+					entity.components,
+					"to query with the key:",
+					key,
+				)
+				result[entity_key] = data
+			}
 		}
 
 		log.info("Constructed query for key:", key, "with the result", result)
@@ -30,7 +43,35 @@ construct_query :: proc(world: ^World) -> Query {
 	return result
 }
 
-pack_to_bytes :: proc(components: map[typeid]any) -> [dynamic]byte {
+// pack_to_bytes :: proc -> {
+//     // pack_to_bytes_one,
+//     pack_to_byteass_two
+// }
+
+// pack_to_bytes_one :: proc(components: map[typeid]any, key: typeid) -> (bool, [dynamic]byte) {
+//     return false, [dynamic]byte{}
+// }
+
+pack_to_bytes_two :: proc(components: map[typeid]any, key: SystemKey) -> (bool, [dynamic]byte) {
+
 	result := [dynamic]byte{}
-	return result
+
+	for type in key {
+		component, ok := components[type]
+		if !ok {
+			return ok, [dynamic]byte{}
+		} else {
+			component_size := type_info_of(type).size
+			log.info("component", component)
+			log.info("type_info_of(type).size", type_info_of(type).size)
+			for byte in mem.byte_slice(component.data, type_info_of(type).size) {
+				append(&result, byte)
+			}
+
+			log.info("component", component)
+			log.info("type_info_of(type).size", type_info_of(type).size)
+		}
+	}
+
+	return true, result
 }

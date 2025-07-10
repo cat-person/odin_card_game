@@ -99,7 +99,7 @@ hello_name_and_kind :: proc(world: ^ecs.World, query: ^ecs.Query) {
 		Name,
 		Kind,
 		proc(world: ^ecs.World, entity_id: ecs.EntityId, name: Name, kind: Kind) {
-			log.error("hello kind/name", kind, name)
+			log.error("hello name/kind", name, kind)
 		},
 	)
 }

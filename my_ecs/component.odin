@@ -11,16 +11,16 @@ denormilise_entities :: proc(
 	queries := map[SystemKey]Query{}
 
 	for component_key in systems {
-		switch type in component_key {
-		case typeid:
-			{
-				queries[component_key] = extract_query_single(entities, type)
-			}
-		case [2]typeid:
-			{
-				queries[component_key] = extract_query_multiple(entities, type)
-			}
-		}
+		// switch type in component_key {
+		// case typeid:
+		// 	{
+		// 		queries[component_key] = extract_query_single(entities, type)
+		// 	}
+		// case [2]typeid:
+		// 	{
+		queries[component_key] = extract_query_multiple(entities, component_key)
+		// 	}
+		// }
 	}
 	return queries
 }
@@ -71,10 +71,7 @@ extract_query_multiple :: proc(entities: ^map[EntityId]Entity, multiple_key: [2]
 	return result
 }
 
-SystemKey :: union {
-	typeid,
-	[2]typeid,
-}
+SystemKey :: [2]typeid
 
 
 create_component_key :: proc {
