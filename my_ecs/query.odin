@@ -21,18 +21,29 @@ construct_query :: proc(world: ^World, key: SystemKey) -> Query {
 		}
 		result = Query{}
 
+
 		for entity_key, entity in world.entities {
-			should_be_in_query, data := pack_to_bytes_two(entity.components, key) // world.entities[entity_key])
-			if (should_be_in_query) {
-				log.info(
-					"Put entity:",
-					entity_key,
-					"with components:",
-					entity.components,
-					"to query with the key:",
-					key,
-				)
-				result[entity_key] = data
+
+			switch type in key {
+			case typeid:
+				{
+
+				}
+			case [2]typeid:
+				{
+					should_be_in_query, data := pack_to_bytes_two(entity.components, type) // world.entities[entity_key])
+					if (should_be_in_query) {
+						log.info(
+							"Put entity:",
+							entity_key,
+							"with components:",
+							entity.components,
+							"to query with the key:",
+							key,
+						)
+						result[entity_key] = data
+					}
+				}
 			}
 		}
 
@@ -43,16 +54,16 @@ construct_query :: proc(world: ^World, key: SystemKey) -> Query {
 	return result
 }
 
-// pack_to_bytes :: proc -> {
-//     // pack_to_bytes_one,
-//     pack_to_byteass_two
-// }
+pack_to_bytes :: proc {
+	pack_to_bytes_one,
+	pack_to_bytes_two,
+}
 
-// pack_to_bytes_one :: proc(components: map[typeid]any, key: typeid) -> (bool, [dynamic]byte) {
-//     return false, [dynamic]byte{}
-// }
+pack_to_bytes_one :: proc(components: map[typeid]any, key: typeid) -> (bool, [dynamic]byte) {
+	return false, [dynamic]byte{}
+}
 
-pack_to_bytes_two :: proc(components: map[typeid]any, key: SystemKey) -> (bool, [dynamic]byte) {
+pack_to_bytes_two :: proc(components: map[typeid]any, key: [2]typeid) -> (bool, [dynamic]byte) {
 
 	result := [dynamic]byte{}
 

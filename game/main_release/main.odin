@@ -18,9 +18,12 @@ main :: proc() {
 	ecs.add_entity(&world, Name("Octopus"), Kind("Octocat"), PawCount(8))
 	ecs.add_entity(&world, Name("George"), Kind("Human"), PawCount(2))
 	ecs.add_entity(&world, Kind("Human"), PawCount(2))
+	ecs.add_entity(&world, Kind("Snail"), Name("Mefisto"))
+	ecs.add_entity(&world, Kind("Worm"))
 
 	ecs.add_system(&world, Kind, Name, hello_kind_and_name)
 	ecs.add_system(&world, Name, Kind, hello_name_and_kind)
+	ecs.add_system(&world, Name, PawCount, put_on_shoes)
 
 	ecs.add_event_handler(&world, ChangeName, change_name_handler)
 
@@ -72,9 +75,11 @@ put_on_shoes :: proc(world: ^ecs.World, query: ^ecs.Query) {
 		world,
 		query,
 		PawCount,
-		proc(world: ^ecs.World, entity_id: ecs.EntityId, paw_count: PawCount) {
-			log.error("put_on_shoes paw_count = ", paw_count)
+		Name,
+		proc(world: ^ecs.World, entity_id: ecs.EntityId, paw_count: PawCount, name: Name) {
+			log.error("put_on_shoes on", name, "with", paw_count, "paws")
 			for paw_idx in 0 ..< paw_count {
+				log.error("shoe has been put on paw", paw_idx + 1)
 			}
 		},
 	)

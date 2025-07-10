@@ -11,16 +11,16 @@ denormilise_entities :: proc(
 	queries := map[SystemKey]Query{}
 
 	for component_key in systems {
-		// switch type in component_key {
-		// case typeid:
-		// 	{
-		// 		queries[component_key] = extract_query_single(entities, type)
-		// 	}
-		// case [2]typeid:
-		// 	{
-		queries[component_key] = extract_query_multiple(entities, component_key)
-		// 	}
-		// }
+		switch type in component_key {
+		case typeid:
+			{
+				queries[component_key] = extract_query_single(entities, type)
+			}
+		case [2]typeid:
+			{
+				queries[component_key] = extract_query_two(entities, type)
+			}
+		}
 	}
 	return queries
 }
@@ -32,16 +32,13 @@ extract_query_single :: proc(entities: ^map[EntityId]Entity, data_type: typeid) 
 		if (data_type in entity.components) {
 			query_data := make([dynamic]byte)
 			component_data := entity.components[data_type]
-			// for data_byte_idx in 0 ..< len(component_data) {
-			// 	append(&query_data, component_data[data_byte_idx])
-			// }
 			result[entity_id] = query_data
 		}
 	}
 	return result
 }
 
-extract_query_multiple :: proc(entities: ^map[EntityId]Entity, multiple_key: [2]typeid) -> Query {
+extract_query_two :: proc(entities: ^map[EntityId]Entity, multiple_key: [2]typeid) -> Query {
 	result := make(Query)
 
 	for entity_id, entity in entities {
@@ -71,7 +68,10 @@ extract_query_multiple :: proc(entities: ^map[EntityId]Entity, multiple_key: [2]
 	return result
 }
 
-SystemKey :: [2]typeid
+SystemKey :: union {
+	typeid,
+	[2]typeid,
+}
 
 
 create_component_key :: proc {
