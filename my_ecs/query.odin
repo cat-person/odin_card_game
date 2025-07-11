@@ -13,75 +13,69 @@ handle_query :: proc {
 
 construct_query :: proc(world: ^World, key: SystemKey) -> Query {
 	result: Query
-	// key: SystemKey
 	if len(world.systems) > 0 {
-		// for system_key in world.systems { 	// entries.first
-		// 	key = system_key
-		// 	break
-		// }
 		result = Query{}
 
 		for entity_key, entity in world.entities {
-
-			switch type in key {
-			case typeid:
-				{
-
-				}
-			case [2]typeid:
-				{
-					should_be_in_query, data := pack_to_bytes_two(entity.components, type) // world.entities[entity_key])
-					if (should_be_in_query) {
-						log.info(
-							"Put entity:",
-							entity_key,
-							"with components:",
-							entity.components,
-							"to query with the key:",
-							key,
-						)
-						result[entity_key] = data
-					}
-				}
+			should_be_in_query, data := pack_to_bytes(entity.components, key)
+			if (should_be_in_query) {
+				log.info(
+					"Put entity:",
+					entity_key,
+					"with components:",
+					entity.components,
+					"to query with the key:",
+					key,
+				)
+				result[entity_key] = data
 			}
 		}
-
-		log.info("Constructed query for key:", key, "with the result", result)
 	} else {
 		log.info("No systems has been found chill for now")
 	}
 	return result
 }
 
-pack_to_bytes :: proc {
-	pack_to_bytes_one,
-	pack_to_bytes_two,
-}
-
-pack_to_bytes_one :: proc(components: map[typeid]any, key: typeid) -> (bool, [dynamic]byte) {
-	return false, [dynamic]byte{}
-}
-
-pack_to_bytes_two :: proc(components: map[typeid]any, key: [2]typeid) -> (bool, [dynamic]byte) {
-
+pack_to_bytes :: proc(components: map[typeid]any, key: SystemKey) -> (bool, [dynamic]byte) {
 	result := [dynamic]byte{}
+	switch type in key {
+	case typeid:
+		{
+			component, ok := components[type]
+			if !ok {
+				return false, [dynamic]byte{}
+			} else {
+				component_size := type_info_of(type).size
+				for byte in mem.byte_slice(component.data, type_info_of(type).size) {
+					append(&result, byte)
+				}
 
-	for type in key {
-		component, ok := components[type]
-		if !ok {
-			return ok, [dynamic]byte{}
-		} else {
-			component_size := type_info_of(type).size
-			log.info("component", component)
-			log.info("type_info_of(type).size", type_info_of(type).size)
-			for byte in mem.byte_slice(component.data, type_info_of(type).size) {
-				append(&result, byte)
+				log.info("component", component)
+				log.info("type_info_of(type).size", type_info_of(type).size)
 			}
+		}
+	case [2]typeid:
+		{
 
-			log.info("component", component)
-			log.info("type_info_of(type).size", type_info_of(type).size)
+			for component_type in type {
+				component, ok := components[component_type]
+				if !ok {
+					return false, [dynamic]byte{}
+				} else {
+					component_size := type_info_of(component_type).size
+					for byte in mem.byte_slice(component.data, type_info_of(component_type).size) {
+						append(&result, byte)
+					}
+
+					log.info(
+						"component",
+						component,
+						"type_info_of(type).size",
+						type_info_of(component_type).size,
+					)
+				}
+			}
 		}
 	}
-
 	return true, result
 }

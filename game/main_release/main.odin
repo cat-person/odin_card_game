@@ -24,6 +24,7 @@ main :: proc() {
 	ecs.add_system(&world, Kind, Name, hello_kind_and_name)
 	ecs.add_system(&world, Name, Kind, hello_name_and_kind)
 	ecs.add_system(&world, Name, PawCount, put_on_shoes)
+	// ecs.add_system(&world, Kind, kill_all_humans)
 
 	ecs.add_event_handler(&world, ChangeName, change_name_handler)
 
