@@ -8,11 +8,18 @@ import "core:mem"
 import "core:reflect"
 
 add_system1 :: proc(world: ^World, data_type: typeid, system: proc(_: ^World, _: ^Query)) {
-	// if len(world.systems[data_type]) == 0 {
-	// 	world.systems[data_type] = [dynamic]proc(_: ^World, _: ^Query){ system }
-	// } else {
-	// 	append(&world.systems[data_type], system)
-	// }
+	if len(world.systems[data_type]) == 0 {
+		log.info(
+			"New collection of systems with the key {",
+			data_type,
+			"} was added for system",
+			system,
+		)
+		world.systems[data_type] = [dynamic]proc(_: ^World, _: ^Query){system}
+	} else {
+		log.info("System", system, "was added to collection with the key {", data_type, "}")
+		append(&world.systems[data_type], system)
+	}
 	log.info("add_system1")
 }
 
@@ -58,28 +65,20 @@ handle_query2 :: proc(
 	$T1, $T2: typeid,
 	logic: proc(_: ^World, _: EntityId, _: T1, _: T2),
 ) {
-	// bytes1: [size_of(T1)]byte
-	// bytes2: [size_of(T2)]byte
-
 	for entity_id, data in query {
 		log.info("Running system", logic, "on", data)
 
 		if (transmute(u64)(typeid_of(T1)) < transmute(u64)(typeid_of(T2))) {
-
-			log.info("###################", len(data))
-
 			t1_data: [size_of(T1)]byte
 			mem.copy(&t1_data, raw_data(data[:size_of(T1)]), size_of(T1))
 			t2_data: [size_of(T2)]byte
 			mem.copy(&t2_data, raw_data(data[size_of(T1):]), size_of(T2))
-
-			log.info("Before transmute to type", typeid_of(T1), "with data", t1_data)
 			t1_casted_data := transmute(T1)(t1_data)
-			log.info("Transmuted data of type ", typeid_of(T1), ": ", t1_casted_data)
-
-			log.info("Before transmute to type", typeid_of(T2), "with data", t2_data)
 			t2_casted_data := transmute(T2)(t2_data)
-			log.info("Transmuted data of type ", typeid_of(T2), ": ", t2_casted_data)
+			log.info(
+				"Transmuted data",
+				map[typeid]any{typeid_of(T1) = t1_casted_data, typeid_of(T2) = t2_casted_data},
+			)
 
 			logic(world, entity_id, t1_casted_data, t2_casted_data)
 		} else {

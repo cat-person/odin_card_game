@@ -21,13 +21,12 @@ main :: proc() {
 	ecs.add_entity(&world, Kind("Snail"), Name("Mefisto"))
 	ecs.add_entity(&world, Kind("Worm"))
 
-	ecs.add_system(&world, Kind, Name, hello_kind_and_name)
-	ecs.add_system(&world, Name, Kind, hello_name_and_kind)
-	ecs.add_system(&world, Name, PawCount, put_on_shoes)
-	// ecs.add_system(&world, Kind, kill_all_humans)
+	// ecs.add_system(&world, Kind, Name, hello_kind_and_name)
+	// ecs.add_system(&world, Name, Kind, hello_name_and_kind)
+	// ecs.add_system(&world, Name, PawCount, put_on_shoes)
+	ecs.add_system(&world, Kind, kill_all_humans)
 
-	ecs.add_event_handler(&world, ChangeName, change_name_handler)
-
+	ecs.update_world(&world)
 	ecs.update_world(&world)
 }
 
@@ -66,7 +65,7 @@ print_kinds :: proc(world: ^ecs.World, query: ^ecs.Query) {
 		query,
 		Kind,
 		proc(world: ^ecs.World, entity_id: ecs.EntityId, kind: Kind) {
-			log.error("print kinds = ", kind)
+			// log.error("print kinds = ", kind)
 		},
 	)
 }
@@ -80,7 +79,7 @@ put_on_shoes :: proc(world: ^ecs.World, query: ^ecs.Query) {
 		proc(world: ^ecs.World, entity_id: ecs.EntityId, paw_count: PawCount, name: Name) {
 			log.error("put_on_shoes on", name, "with", paw_count, "paws")
 			for paw_idx in 0 ..< paw_count {
-				log.error("shoe has been put on paw", paw_idx + 1)
+				// log.error("shoe has been put on paw", paw_idx + 1)
 			}
 		},
 	)
@@ -110,7 +109,23 @@ hello_name_and_kind :: proc(world: ^ecs.World, query: ^ecs.Query) {
 	)
 }
 
-change_name_handler :: proc(world: ^ecs.World, entity_id: ecs.EntityId, events: []any) {
+kill_all_humans :: proc(world: ^ecs.World, query: ^ecs.Query) {
+	ecs.handle_query(
+		world,
+		query,
+		Kind,
+		proc(world: ^ecs.World, entity_id: ecs.EntityId, kind: Kind) {
+			if kind == Kind("Human") {
+				delete_key(&world.entities, entity_id)
+				log.error("Pesky human was killed")
+			} else {
+				log.error(kind, "was left alive")
+			}
+		},
+	)
+}
+
+kill_human_handler :: proc(world: ^ecs.World, entity_id: ecs.EntityId, events: []any) {
 	//	for event in events {
 	//		change_name := transmute(ChangeName)event
 	log.error("change_name_handler")
@@ -119,4 +134,8 @@ change_name_handler :: proc(world: ^ecs.World, entity_id: ecs.EntityId, events: 
 
 ChangeName :: struct {
 	new_name: Name,
+}
+
+KillHuman :: struct {
+	entity_id: ecs.EntityId,
 }
