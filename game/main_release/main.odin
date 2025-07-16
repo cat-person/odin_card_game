@@ -7,12 +7,26 @@ import "core:mem"
 import "core:os"
 import "core:reflect"
 
+import rl "vendor:raylib"
+
+import game ".."
 import ecs "../../my_ecs"
 
 main :: proc() {
 	context.logger = log.create_console_logger()
 
 	world := ecs.create_world()
+
+	// camera_entity := ecs.add_entity(
+	// 	&world,
+	// 	rl.Camera3D,
+	// 	rl.Camera3D {
+	// 		position = {0.0, 0.4, -0.4},
+	// 		target = {0.0, 0.0, 0.0},
+	// 		up = {0.0, 1.0, 0.0},
+	// 		fovy = 30,
+	// 	},
+	// )
 
 	ecs.add_entity(&world, Name("Lucky"), Kind("Gato"), PawCount(4))
 	ecs.add_entity(&world, Name("Octopus"), Kind("Octocat"), PawCount(8))
@@ -28,6 +42,8 @@ main :: proc() {
 
 	ecs.update_world(&world)
 	ecs.update_world(&world)
+
+	game_create()
 }
 
 Name :: distinct string
@@ -138,4 +154,17 @@ ChangeName :: struct {
 
 KillHuman :: struct {
 	entity_id: ecs.EntityId,
+}
+
+game_create :: proc() {
+	game.game_init_window()
+	game.game_init()
+
+	for game.game_should_run() {
+		game.game_update()
+	}
+
+	free_all(context.temp_allocator)
+	game.game_shutdown()
+	game.game_shutdown_window()
 }
