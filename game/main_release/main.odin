@@ -12,21 +12,17 @@ import rl "vendor:raylib"
 import game ".."
 import ecs "../../my_ecs"
 
+Game_Memory :: struct {
+	player_pos:     rl.Vector2,
+	player_texture: rl.Texture,
+	some_number:    int,
+	run:            bool,
+}
+
 main :: proc() {
 	context.logger = log.create_console_logger()
 
 	world := ecs.create_world()
-
-	// camera_entity := ecs.add_entity(
-	// 	&world,
-	// 	rl.Camera3D,
-	// 	rl.Camera3D {
-	// 		position = {0.0, 0.4, -0.4},
-	// 		target = {0.0, 0.0, 0.0},
-	// 		up = {0.0, 1.0, 0.0},
-	// 		fovy = 30,
-	// 	},
-	// )
 
 	ecs.add_entity(&world, Name("Lucky"), Kind("Gato"), PawCount(4))
 	ecs.add_entity(&world, Name("Octopus"), Kind("Octocat"), PawCount(8))
@@ -35,15 +31,27 @@ main :: proc() {
 	ecs.add_entity(&world, Kind("Snail"), Name("Mefisto"))
 	ecs.add_entity(&world, Kind("Worm"))
 
-	// ecs.add_system(&world, Kind, Name, hello_kind_and_name)
-	// ecs.add_system(&world, Name, Kind, hello_name_and_kind)
-	// ecs.add_system(&world, Name, PawCount, put_on_shoes)
+	ecs.add_system(&world, Kind, kill_all_humans)
 	ecs.add_system(&world, Kind, kill_all_humans)
 
 	ecs.update_world(&world)
 	ecs.update_world(&world)
 
 	game_create()
+}
+
+
+g: ^game.Game_Memory
+
+draw :: proc(world: ^ecs.World, query: ^ecs.Query) {
+	ecs.handle_query(
+		world,
+		query,
+		Name,
+		proc(world: ^ecs.World, entity_id: ecs.EntityId, name: Name) {
+			log.error("hello", name)
+		},
+	)
 }
 
 Name :: distinct string
@@ -157,14 +165,29 @@ KillHuman :: struct {
 }
 
 game_create :: proc() {
-	game.game_init_window()
-	game.game_init()
+	rl.SetConfigFlags({.WINDOW_RESIZABLE, .VSYNC_HINT})
+	rl.InitWindow(1280, 720, "MAIN")
+	rl.SetWindowPosition(200, 200)
+	rl.SetTargetFPS(60)
+	rl.SetExitKey(rl.KeyboardKey.SPACE)
 
-	for game.game_should_run() {
-		game.game_update()
+	// g = new(Game_Memory)
+
+	// g^ = Game_Memory {
+	// 	run         = true,
+	// 	some_number = 100,
+	// 	player_pos  = {-5, -5},
+	// }
+
+	for !rl.WindowShouldClose() {
+		rl.BeginDrawing()
+		rl.ClearBackground(rl.RAYWHITE)
+		rl.DrawText("Press SPACE to exit", 100, 100, 20, rl.BLACK)
+		rl.EndDrawing()
 	}
 
 	free_all(context.temp_allocator)
-	game.game_shutdown()
-	game.game_shutdown_window()
+
+	// game.game_shutdown()
+	// game.game_shutdown_window()
 }
