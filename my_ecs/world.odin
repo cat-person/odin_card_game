@@ -7,11 +7,11 @@ import "core:mem"
 import "core:reflect"
 
 World :: struct {
-	entities:          map[EntityId]Entity,
-	components:        map[SystemKey]Query,
-	systems:           map[SystemKey][dynamic]proc(_: ^World, _: ^Query), // map event type to
-	event_handlers:    map[typeid]proc(_: ^World, _: EntityId, _: []any),
-	mutation_handlers: map[typeid]proc(_: ^World, _: EntityId, _: []any),
+	entities: map[EntityId]Entity,
+	// components:        map[SystemKey]Query,
+	systems:  map[SystemKey][dynamic]proc(_: ^World, _: ^Query), // map event type to
+	// event_handlers:    map[typeid]proc(_: ^World, _: EntityId, _: []any),
+	// mutation_handlers: map[typeid]proc(_: ^World, _: EntityId, _: []any),
 }
 
 
@@ -20,9 +20,9 @@ EventId :: struct {
 	evnet_type: typeid,
 }
 
-create_world :: proc() -> World {
-	return World{}
-}
+// create_world :: proc() -> World {
+// 	return World{}
+// }
 
 
 add_event_handler :: proc(

@@ -1,3 +1,4 @@
+#+feature dynamic-literals
 package main_release
 
 import "core:bytes"
@@ -12,36 +13,59 @@ import rl "vendor:raylib"
 import game ".."
 import ecs "../../my_ecs"
 
-Game_Memory :: struct {
-	player_pos:     rl.Vector2,
-	player_texture: rl.Texture,
-	some_number:    int,
-	run:            bool,
-}
-
 main :: proc() {
 	context.logger = log.create_console_logger()
+	world := ecs.World {
+		entities = {
+			ecs.EntityId(0) = ecs.Entity {
+				components = {
+					typeid_of(Name) = Name("Lucky"),
+					typeid_of(Kind) = Kind("Gato"),
+					typeid_of(PawCount) = PawCount(4),
+				},
+			},
+			ecs.EntityId(0) = ecs.Entity {
+				components = {
+					typeid_of(Name) = Name("Octopus"),
+					typeid_of(Kind) = Kind("Octocat"),
+					typeid_of(PawCount) = PawCount(8),
+				},
+			},
+			ecs.EntityId(0) = ecs.Entity {
+				components = {
+					typeid_of(Name) = Name("George"),
+					typeid_of(Kind) = Kind("Human"),
+					typeid_of(PawCount) = PawCount(2),
+				},
+			},
+			ecs.EntityId(0) = ecs.Entity {
+				components = {typeid_of(Kind) = Kind("Human"), typeid_of(PawCount) = PawCount(2)},
+			},
+			ecs.EntityId(0) = ecs.Entity {
+				components = {typeid_of(Name) = Name("Mefisto"), typeid_of(Kind) = Kind("Snail")},
+			},
+			ecs.EntityId(0) = ecs.Entity{components = {typeid_of(Kind) = Kind("Worm")}},
+		},
+		systems = {typeid_of(Kind) = {kill_all_humans}},
+	}
 
-	world := ecs.create_world()
+	rl.SetConfigFlags({.WINDOW_RESIZABLE, .VSYNC_HINT})
+	rl.InitWindow(1280, 720, "MAIN")
+	rl.SetWindowPosition(200, 200)
+	rl.SetTargetFPS(60)
+	rl.SetExitKey(rl.KeyboardKey.SPACE)
 
-	ecs.add_entity(&world, Name("Lucky"), Kind("Gato"), PawCount(4))
-	ecs.add_entity(&world, Name("Octopus"), Kind("Octocat"), PawCount(8))
-	ecs.add_entity(&world, Name("George"), Kind("Human"), PawCount(2))
-	ecs.add_entity(&world, Kind("Human"), PawCount(2))
-	ecs.add_entity(&world, Kind("Snail"), Name("Mefisto"))
-	ecs.add_entity(&world, Kind("Worm"))
 
-	ecs.add_system(&world, Kind, kill_all_humans)
-	ecs.add_system(&world, Kind, kill_all_humans)
+	for !rl.WindowShouldClose() {
+		rl.BeginDrawing()
+		rl.ClearBackground(rl.RAYWHITE)
+		rl.DrawText("Press SPACE to exit", 100, 100, 20, rl.BLACK)
+		ecs.update_world(&world)
+		rl.EndDrawing()
+	}
 
-	ecs.update_world(&world)
-	ecs.update_world(&world)
-
-	game_create()
+	free_all(context.temp_allocator)
 }
-
-
-g: ^game.Game_Memory
 
 draw :: proc(world: ^ecs.World, query: ^ecs.Query) {
 	ecs.handle_query(
@@ -154,40 +178,4 @@ kill_human_handler :: proc(world: ^ecs.World, entity_id: ecs.EntityId, events: [
 	//		change_name := transmute(ChangeName)event
 	log.error("change_name_handler")
 	//	}
-}
-
-ChangeName :: struct {
-	new_name: Name,
-}
-
-KillHuman :: struct {
-	entity_id: ecs.EntityId,
-}
-
-game_create :: proc() {
-	rl.SetConfigFlags({.WINDOW_RESIZABLE, .VSYNC_HINT})
-	rl.InitWindow(1280, 720, "MAIN")
-	rl.SetWindowPosition(200, 200)
-	rl.SetTargetFPS(60)
-	rl.SetExitKey(rl.KeyboardKey.SPACE)
-
-	// g = new(Game_Memory)
-
-	// g^ = Game_Memory {
-	// 	run         = true,
-	// 	some_number = 100,
-	// 	player_pos  = {-5, -5},
-	// }
-
-	for !rl.WindowShouldClose() {
-		rl.BeginDrawing()
-		rl.ClearBackground(rl.RAYWHITE)
-		rl.DrawText("Press SPACE to exit", 100, 100, 20, rl.BLACK)
-		rl.EndDrawing()
-	}
-
-	free_all(context.temp_allocator)
-
-	// game.game_shutdown()
-	// game.game_shutdown_window()
 }

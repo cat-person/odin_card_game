@@ -9,7 +9,6 @@ import "core:reflect"
 EntityId :: distinct u16
 
 Entity :: struct {
-	id:         EntityId,
 	components: map[typeid]any,
 }
 
@@ -32,6 +31,10 @@ add_entity :: proc(world: ^World, components: ..any) -> EntityId {
 		"entities in the world",
 	)
 	return entity_id
+}
+
+create_entity :: proc(components: map[typeid]any) -> Entity {
+	return Entity{components}
 }
 
 calc_entity_id :: proc(world: ^World) -> EntityId {
