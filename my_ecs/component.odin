@@ -29,9 +29,9 @@ extract_query_single :: proc(entities: ^map[EntityId]Entity, data_type: typeid) 
 	result := make(Query)
 
 	for entity_id, entity in entities {
-		if (data_type in entity.components) {
+		if (data_type in entity) {
 			query_data := make([dynamic]byte)
-			component_data := entity.components[data_type]
+			component_data := entity[data_type]
 			result[entity_id] = query_data
 		}
 	}
@@ -44,7 +44,7 @@ extract_query_two :: proc(entities: ^map[EntityId]Entity, multiple_key: [2]typei
 	for entity_id, entity in entities {
 		contains_all_components := true
 		for data_type in multiple_key {
-			if data_type in entity.components {
+			if data_type in entity {
 
 			} else {
 				contains_all_components = false
@@ -56,7 +56,7 @@ extract_query_two :: proc(entities: ^map[EntityId]Entity, multiple_key: [2]typei
 
 			for data_type in multiple_key {
 				data_size := reflect.type_info_base(type_info_of(data_type)).size
-				component_data := entity.components[data_type]
+				component_data := entity[data_type]
 				for data_byte_idx in 0 ..< data_size {
 					// append(&query_data, component_data[data_byte_idx])
 				}

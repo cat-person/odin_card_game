@@ -30,12 +30,15 @@ handle_query1 :: proc(
 	logic: proc(_: ^World, _: EntityId, _: T),
 ) {
 	bytes: [size_of(T)]byte
+	log.info(query)
 	for entity_id, data in query {
 		for byte_idx in 0 ..< size_of(T) {
 			bytes[byte_idx] = data[byte_idx]
 		}
+		log.info("Call logic")
 		logic(world, entity_id, transmute(T)bytes)
 	}
+
 }
 
 add_system2 :: proc(

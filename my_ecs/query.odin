@@ -11,28 +11,39 @@ handle_query :: proc {
 	handle_query2,
 }
 
-construct_query :: proc(world: ^World, key: SystemKey) -> Query {
-	result: Query
-	if len(world.systems) > 0 {
-		result = Query{}
+construct_query :: proc(entities: ^map[EntityId]Entity, key: SystemKey) -> Query {
+	result := Query{}
 
-		for entity_key, entity in world.entities {
-			should_be_in_query, data := pack_to_bytes(entity.components, key)
-			if (should_be_in_query) {
-				log.info(
-					"Put entity:",
-					entity_key,
-					"with components:",
-					entity.components,
-					"to query with the key:",
-					key,
-				)
-				result[entity_key] = data
-			}
+	log.info("entities", entities)
+
+	for entity_key, entity in entities {
+		should_be_in_query, data := pack_to_bytes(entity, key)
+		log.info(
+			"entity",
+			entity,
+			"key",
+			entity_key,
+			"should_be_in_query",
+			should_be_in_query,
+			"data",
+			data,
+		)
+		if (should_be_in_query) {
+			log.info(
+				"Put entity:",
+				entity_key,
+				"with components:",
+				entity,
+				"to query with the key:",
+				key,
+			)
+			result[entity_key] = data
 		}
-	} else {
-		log.info("No systems has been found chill for now")
 	}
+	// }
+	// else {
+	// 	log.info("No systems has been found chill for now")
+	// }
 	return result
 }
 
@@ -41,7 +52,9 @@ pack_to_bytes :: proc(components: map[typeid]any, key: SystemKey) -> (bool, [dyn
 	switch type in key {
 	case typeid:
 		{
+			log.info("typeid", type)
 			component, ok := components[type]
+			log.info("component", type, "ok", ok)
 			if !ok {
 				return false, [dynamic]byte{}
 			} else {
