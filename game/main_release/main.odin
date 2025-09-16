@@ -19,17 +19,21 @@ main :: proc() {
 		entities = {
 			ecs.EntityId(0) = ecs.Entity {
 				typeid_of(Name) = Name("Lucky"),
+				typeid_of(Name) = Name("Lucky"),
 				typeid_of(Kind) = Kind("Gato"),
+				typeid_of(Position) = Position{100, 100},
 				typeid_of(PawCount) = PawCount(4),
 			},
 			ecs.EntityId(1) = ecs.Entity {
 				typeid_of(Name) = Name("Octopus"),
 				typeid_of(Kind) = Kind("Octocat"),
+				typeid_of(Position) = Position{200, 200},
 				typeid_of(PawCount) = PawCount(8),
 			},
 			ecs.EntityId(2) = ecs.Entity {
 				typeid_of(Name) = Name("George"),
 				typeid_of(Kind) = Kind("Human"),
+				typeid_of(Position) = Position{300, 300},
 				typeid_of(PawCount) = PawCount(2),
 			},
 			ecs.EntityId(3) = ecs.Entity {
@@ -42,7 +46,10 @@ main :: proc() {
 			},
 			ecs.EntityId(5) = ecs.Entity{typeid_of(Kind) = Kind("Worm")},
 		},
-		systems = {typeid_of(Name) = {draw_username}},
+		systems = {
+			// typeid_of(Name) = {draw_username},
+			[2]typeid{typeid_of(Name), typeid_of(Position)} = {draw_username_with_position},
+		},
 	}
 
 	rl.SetConfigFlags({.WINDOW_RESIZABLE, .VSYNC_HINT})
@@ -55,11 +62,10 @@ main :: proc() {
 	for !rl.WindowShouldClose() {
 		rl.BeginDrawing()
 		rl.ClearBackground(rl.RAYWHITE)
-		rl.DrawText("Press SPACE to exit", 100, 100, 20, rl.BLACK)
+		// rl.DrawText("Press SPACE to exit", 100, 100, 20, rl.BLACK)
 		ecs.update_world(&world)
 		rl.EndDrawing()
 	}
-
 
 	free_all(context.temp_allocator)
 }
@@ -67,6 +73,7 @@ main :: proc() {
 Name :: distinct string
 Kind :: distinct string
 PawCount :: distinct u8
+Position :: distinct [2]i32
 
 draw_username :: proc(world: ^ecs.World, query: ^ecs.Query) {
 	ecs.handle_query(
@@ -85,6 +92,25 @@ draw_username :: proc(world: ^ecs.World, query: ^ecs.Query) {
 	)
 }
 
+
+draw_username_with_position :: proc(world: ^ecs.World, query: ^ecs.Query) {
+	log.info("draw_username_with_position")
+	ecs.handle_query(
+		world,
+		query,
+		Name,
+		Position,
+		proc(world: ^ecs.World, entity_id: ecs.EntityId, name: Name, position: Position) {
+			log.info("draw_username_with_position position", position)
+			// rl.BeginDrawing()
+			// rl.ClearBackground(rl.RAYWHITE)
+			// name := fmt.tprintf("%s", name)
+			rl.DrawText("BBBB", position.x, position.y, 20, rl.RED)
+			// ecs.update_world(world)
+			// rl.EndDrawing()
+		},
+	)
+}
 
 // rename :: proc(world: ^ecs.World, query: ^ecs.Query) {
 // 	ecs.handle_query(

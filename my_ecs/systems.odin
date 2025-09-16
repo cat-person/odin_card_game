@@ -46,7 +46,12 @@ add_system2 :: proc(
 	data_type1, data_type2: typeid,
 	system: proc(_: ^World, _: ^Query),
 ) {
-	composite_type := create_component_key(data_type1, data_type2)
+	composite_type: SystemKey
+	if (transmute(u64)(data_type1) < transmute(u64)(data_type2)) {
+		composite_type = create_component_key(data_type1, data_type2)
+	} else {
+		composite_type = create_component_key(data_type2, data_type1)
+	}
 	if len(world.systems[composite_type]) == 0 {
 		log.info(
 			"New collection of systems with the key {",

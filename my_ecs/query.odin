@@ -3,6 +3,7 @@ package my_ecs
 
 import "core:log"
 import "core:mem"
+import "core:sort"
 
 Query :: map[EntityId][dynamic]byte // refactor dynamic
 
@@ -70,7 +71,25 @@ pack_to_bytes :: proc(components: map[typeid]any, key: SystemKey) -> (bool, [dyn
 	case [2]typeid:
 		{
 
-			for component_type in type {
+			arr := type
+
+			sort.bubble_sort_proc(
+				arr[:],
+				proc(data_type1, data_type2: typeid) -> int {
+					u64_data_1 := transmute(u64)(data_type1)
+					u64_data_2 := transmute(u64)(data_type2) // Descending order
+
+					if (u64_data_1 == u64_data_2) {
+						return 0
+					} else if (u64_data_1 < u64_data_2) {
+						return -1
+					} else {
+						return 1
+					}
+				},
+			)
+
+			for component_type in arr {
 				component, ok := components[component_type]
 				if !ok {
 					return false, [dynamic]byte{}
