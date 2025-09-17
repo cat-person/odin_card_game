@@ -15,29 +15,29 @@ handle_query :: proc {
 construct_query :: proc(entities: ^map[EntityId]Entity, key: SystemKey) -> Query {
 	result := Query{}
 
-	log.info("entities", entities)
+	//log.info("entities", entities)
 
 	for entity_key, entity in entities {
 		should_be_in_query, data := pack_to_bytes(entity, key)
-		log.info(
-			"entity",
-			entity,
-			"key",
-			entity_key,
-			"should_be_in_query",
-			should_be_in_query,
-			"data",
-			data,
-		)
+		// log.info(
+		// 	"entity",
+		// 	entity,
+		// 	"key",
+		// 	entity_key,
+		// 	"should_be_in_query",
+		// 	should_be_in_query,
+		// 	"data",
+		// 	data,
+		// )
 		if (should_be_in_query) {
-			log.info(
-				"Put entity:",
-				entity_key,
-				"with components:",
-				entity,
-				"to query with the key:",
-				key,
-			)
+			// log.info(
+			// 	"Put entity:",
+			// 	entity_key,
+			// 	"with components:",
+			// 	entity,
+			// 	"to query with the key:",
+			// 	key,
+			// )
 			result[entity_key] = data
 		}
 	}
@@ -53,9 +53,9 @@ pack_to_bytes :: proc(components: map[typeid]any, key: SystemKey) -> (bool, [dyn
 	switch type in key {
 	case typeid:
 		{
-			log.info("typeid", type)
+			// log.info("typeid", type)
 			component, ok := components[type]
-			log.info("component", type, "ok", ok)
+			// log.info("component", type, "ok", ok)
 			if !ok {
 				return false, [dynamic]byte{}
 			} else {
@@ -64,8 +64,8 @@ pack_to_bytes :: proc(components: map[typeid]any, key: SystemKey) -> (bool, [dyn
 					append(&result, byte)
 				}
 
-				log.info("component", component)
-				log.info("type_info_of(type).size", type_info_of(type).size)
+				// log.info("component", component)
+				// log.info("type_info_of(type).size", type_info_of(type).size)
 			}
 		}
 	case [2]typeid:
@@ -99,12 +99,12 @@ pack_to_bytes :: proc(components: map[typeid]any, key: SystemKey) -> (bool, [dyn
 						append(&result, byte)
 					}
 
-					log.info(
-						"component",
-						component,
-						"type_info_of(type).size",
-						type_info_of(component_type).size,
-					)
+					// log.info(
+					// 	"component",
+					// 	component,
+					// 	"type_info_of(type).size",
+					// 	type_info_of(component_type).size,
+					// )
 				}
 			}
 		}
