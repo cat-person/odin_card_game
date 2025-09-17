@@ -10,11 +10,14 @@ import "core:reflect"
 
 import rl "vendor:raylib"
 
-import game ".."
+// import game "../"
 import ecs "../../my_ecs"
 
-camera: rl.Camera
 model: rl.Model
+
+game_camera :: proc() -> rl.Camera3D {
+	return {position = {0.0, 0.2, -0.2}, target = {0.0, 0.0, 0.0}, up = {0.0, 1.0, 0.0}, fovy = 30}
+}
 
 main :: proc() {
 	context.logger = log.create_console_logger()
@@ -61,23 +64,16 @@ main :: proc() {
 	rl.SetTargetFPS(10)
 	rl.SetExitKey(rl.KeyboardKey.SPACE)
 
-	camera: rl.Camera3D
-	camera.position = {5, 5, 5} // Move closer to origin
-	camera.target = {0, 0, 0} // Look at origin where model is drawn
-	camera.up = {0, 1, 0} // Y-up (raylib default)
-	camera.fovy = 45.0 // Standard field of view
-	camera.projection = .PERSPECTIVE
-
-	// Load model with error checking
-	model := rl.LoadModel("game/assets/models/card.glb")
+	model = rl.LoadModel("game/assets/models/card.obj")
 	defer rl.UnloadModel(model)
 
 	for !rl.WindowShouldClose() {
-		rl.UpdateCamera(&camera, .ORBITAL) // Allow orbiting with mouse
 		rl.BeginDrawing()
-		rl.ClearBackground(rl.RED)
-		rl.DrawModel(model, {0.0, 0.0, 0.0}, 100000000000.0, rl.WHITE) // Render at origin, scale 1.0
-		// ecs.update_world(&world)
+		rl.ClearBackground(rl.BLACK)
+		rl.BeginMode3D(game_camera())
+		ecs.update_world(&world)
+		rl.DrawGrid(10, 0.1)
+		rl.EndMode3D()
 		rl.EndDrawing()
 	}
 
@@ -134,16 +130,7 @@ draw_card :: proc(world: ^ecs.World, query: ^ecs.Query) {
 		Position,
 		proc(world: ^ecs.World, entity_id: ecs.EntityId, name: Card, position: Position) {
 			log.info("draw_card", position)
-			// rl.BeginDrawing()
-			// rl.ClearBackground(rl.RAYWHITE)
-			// name := fmt.tprintf("%s", name)
-
-			rl.BeginMode3D(camera)
-			rl.DrawModel(model, {0.0, 0.0, 0.0}, 100000000000.0, rl.WHITE) // Render at origin, scale 1.0
-			// Optional: Ground grid for reference
-			rl.EndMode3D()
-			// ecs.update_world(world)
-			// rl.EndDrawing()
+			rl.DrawModel(model, {0.0, 0.0, 0.0}, 1.0, rl.RED) // Render at origin, scale 1.0
 		},
 	)
 }
